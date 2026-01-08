@@ -217,3 +217,15 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
     border-top-right-radius: 10px !important;
     margin-top: -2px;
 }
+
+.bubble {
+  max-width: 85%;
+  width: fit-content;
+  
+  .bubble-text {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: pre-wrap;
+    min-width: 0;
+  }
+}
