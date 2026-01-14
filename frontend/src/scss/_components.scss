@@ -479,7 +479,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
 
 .input-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center; 
   gap: 8px;
   padding: 8px 12px;
   padding-bottom: max(12px, env(safe-area-inset-bottom));
@@ -505,12 +505,12 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
 
 .input-container {
   display: flex;
-  align-items: flex-end;
+  align-items: center; 
   gap: 8px;
-  padding: 8px 12px;
+  padding: 6px 12px; 
   background: var(--input-bg);
   border: 1px solid var(--input-border);
-  border-radius: var(--input-radius);
+  border-radius: 20px; 
   flex: 1;
   transition: background-color 0.3s, border-color 0.2s, box-shadow 0.2s;
   
@@ -518,13 +518,39 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
     border-color: var(--bubble-sent-bg);
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
   }
+
+  @media (max-width: 640px) {
+    gap: 4px;
+    padding: 6px 8px;
+  }
+}
+
+.outside-plus-btn {
+    background: #e5e7eb;
+    color: #6b7280;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover {
+        background: #d1d5db;
+        color: #4b5563;
+    }
+
+    svg {
+        width: 18px;
+        height: 18px;
+    }
 }
 
 .message-input {
   flex: 1;
-  min-height: 40px;
+  min-height: 36px;
   max-height: 120px;
-  padding: 10px 4px;
+  padding: 8px 4px;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -534,6 +560,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   resize: none;
   outline: none;
   line-height: 1.4;
+  min-width: 0; 
 
   &::placeholder {
     color: var(--color-text-secondary);
@@ -561,6 +588,17 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   &:active {
     transform: scale(0.92);
   }
+
+  @media (max-width: 640px) {
+    padding: 6px;
+    width: 32px;
+    height: 32px;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+  }
 }
 
 .emoji-sticker-btn {
@@ -575,9 +613,9 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
 .send-btn-inside { display: flex !important; }
 
 .send-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 9999px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   background: var(--bubble-sent-bg);
   color: #ffffff;
   display: flex;
@@ -586,7 +624,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   border: none;
   cursor: pointer;
   transition: transform 0.2s $spring-bounce, opacity 0.15s, box-shadow 0.15s, background-color 0.2s;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: none;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
@@ -599,20 +637,16 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   }
   
   &:hover:not(:disabled) {
-    transform: scale(1.08);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    transform: scale(1.05);
   }
   
   &:active:not(:disabled) {
-    transform: scale(0.92);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: scale(0.95);
   }
   
   &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
+    opacity: 0;
+    pointer-events: none;
   }
   
   &.send-btn--sending {
@@ -679,7 +713,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   
   .input-row {
     display: flex;
-    align-items: flex-end;
+    align-items: center; 
     gap: 12px;
     padding: 8px 12px;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
@@ -702,7 +736,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
     border: 1px solid var(--md3-outline, #79747E);
     border-radius: 28px;
     padding: 8px 12px;
-    gap: 8px;
+    gap: 4px;
     flex: 1;
     display: flex;
     flex-direction: row; 
@@ -755,13 +789,12 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
     height: 56px;
     border-radius: 16px;
     background: var(--md3-primary, #6750A4);
-    box-shadow: 0 3px 5px -1px rgba(0,0,0,0.2), 0 6px 10px 0 rgba(0,0,0,0.14), 0 1px 18px 0 rgba(0,0,0,0.12);
     transition: all 0.25s $md3-emphasized;
     flex-shrink: 0;
     
     &:hover:not(:disabled) {
-      box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2), 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12);
       transform: scale(1.02);
+      border-radius: 50%;
     }
     
     &:active:not(:disabled) {

@@ -12,9 +12,8 @@
 @use 'components/messageBubble' as *;
 @use 'components/reactionPicker' as *;
 @use 'components/adminPanel' as *;
-@use 'components/gifPicker' as *;
 @use 'components/linkPreview' as *;
-@use 'components/emojiStickerPicker' as *;
+@use 'components/emojiStickerGifPicker' as *;
 
 // Modals & Overlays
 @use 'modals' as *;

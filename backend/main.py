@@ -158,16 +158,16 @@ async def search_gifs(
     pos: Optional[str] = Query(None, description="Pagination position"),
     user: User = Depends(get_current_user)
 ):
-    """search for GIFs using Tenor API"""
-    if not settings.tenor_api_key:
+    """search for GIFs using Klipy API"""
+    if not settings.klipy_api_key:
         raise HTTPException(
             status_code=503, 
-            detail="GIF search not configured. Please set TENOR_API_KEY."
+            detail="GIF search not configured. Please set KLIPY_API_KEY."
         )
     
     async with httpx.AsyncClient() as client:
         params = {
-            "key": settings.tenor_api_key,
+            "key": settings.klipy_api_key,
             "q": q,
             "limit": limit,
             "media_filter": "gif,tinygif",
@@ -178,14 +178,14 @@ async def search_gifs(
         
         try:
             response = await client.get(
-                "https://tenor.googleapis.com/v2/search",
+                "https://api.klipy.com/v2/search",
                 params=params,
                 timeout=10.0
             )
             response.raise_for_status()
             data = response.json()
         except httpx.HTTPError as e:
-            logger.error(f"Tenor API error: {e}")
+            logger.error(f"Klipy API error: {e}")
             raise HTTPException(status_code=503, detail="GIF search temporarily unavailable")
     
     results = []
@@ -217,12 +217,12 @@ async def trending_gifs(
     user: User = Depends(get_current_user)
 ):
     """get trending GIFs"""
-    if not settings.tenor_api_key:
+    if not settings.klipy_api_key:
         raise HTTPException(status_code=503, detail="GIF search not configured")
     
     async with httpx.AsyncClient() as client:
         params = {
-            "key": settings.tenor_api_key,
+            "key": settings.klipy_api_key,
             "limit": limit,
             "media_filter": "gif,tinygif",
             "contentfilter": "medium"
@@ -232,14 +232,14 @@ async def trending_gifs(
         
         try:
             response = await client.get(
-                "https://tenor.googleapis.com/v2/featured",
+                "https://api.klipy.com/v2/featured",
                 params=params,
                 timeout=10.0
             )
             response.raise_for_status()
             data = response.json()
         except httpx.HTTPError as e:
-            logger.error(f"Tenor API error: {e}")
+            logger.error(f"Klipy API error: {e}")
             raise HTTPException(status_code=503, detail="GIF search temporarily unavailable")
     
     results = []

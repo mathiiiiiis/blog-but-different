@@ -27,6 +27,7 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
     padding: 0 !important;
     border: none !important;
     min-width: auto !important;
+    margin-left: 0 !important;
 }
 
 // --- Emoji-Only Messages  ---
@@ -39,6 +40,7 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow: none !important;
   border: none !important;
   min-width: auto !important;
+  margin-left: 0 !important;
   
   .bubble-text {
     font-size: inherit;
@@ -219,8 +221,9 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .bubble {
-  max-width: 85%;
+  max-width: 80vw;
   width: fit-content;
+  margin-left: 6px; 
   
   .bubble-text {
     overflow-wrap: anywhere;
@@ -228,4 +231,8 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
     white-space: pre-wrap;
     min-width: 0;
   }
+}
+
+.bubble-sent {
+    margin-left: auto;
 }

@@ -42,9 +42,9 @@ class Settings(BaseSettings):
     #uploads
     max_file_size: int = 50 * 1024 * 1024
     
-    #GIF Support - Tenor API
-    #get API key from: https://developers.google.com/tenor/guides/quickstart
-    tenor_api_key: str = ""
+    #GIF Support - Klipy API
+    #get API key from: https://partner.klipy.com
+    klipy_api_key: str = ""
     
     class Config:
         env_file = ".env"

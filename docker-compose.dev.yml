@@ -60,7 +60,7 @@ services:
       MINIO_PUBLIC_URL: ""
       SECRET_KEY: dev-secret-key-change-in-production
       CORS_ORIGINS: "*"
-      TENOR_API_KEY: ${TENOR_API_KEY}
+      KLIPY_API_KEY: ${KLIPY_API_KEY}
     volumes:
       - ./backend:/app
       - ./avatars:/app/avatars

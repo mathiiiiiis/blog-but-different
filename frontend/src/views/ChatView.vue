@@ -6,8 +6,7 @@ import { useChatStore } from '../stores/chat'
 import MessageBubble from '../components/MessageBubble.vue'
 import AvatarPicker from '../components/AvatarPicker.vue'
 import ReactionSheet from '../components/ReactionSheet.vue'
-import GifPicker from '../components/GifPicker.vue'
-import EmojiStickerPicker from '../components/EmojiStickerPicker.vue'
+import EmojiStickerPicker from '../components/EmojiStickerGifPicker.vue'
 import AdminPanel from '../components/AdminPanel.vue'
 import Icon from '../components/Icon.vue'
 
@@ -21,20 +20,21 @@ const messageInput = ref('')
 const fileInput = ref(null)
 const selectedFiles = ref([])
 const showAvatarPicker = ref(false)
-const showGifPicker = ref(false)
 const showEmojiPicker = ref(false)
 const showAdminPanel = ref(false)
 const selectedMessageForDetails = ref(null)
 const replyToMessage = ref(null)
 const toast = ref('')
 
+const initialPickerTab = ref('emoji')
+
 const lightboxSources = ref([])
 const lightboxIndex = ref(0)
-const transitionName = ref('fade') //'fade', 'slide-next', 'slide-prev'
+const transitionName = ref('fade')
 
 const isAtBottom = ref(false)
 const unreadCount = ref(0)
-const sendBtnState = ref('idle') //'idle' | 'sending' | 'error'
+const sendBtnState = ref('idle')
 
 const currentTheme = ref(localStorage.getItem('blog-theme') || 'imessage')
 
@@ -84,37 +84,25 @@ function groupMessages(msgs) {
   return msgs.map((msg, index) => {
     const prevMsg = msgs[index - 1]
     const nextMsg = msgs[index + 1]
-    
     const isSameAuthorAsPrev = prevMsg && prevMsg.author_id === msg.author_id
     const isSameAuthorAsNext = nextMsg && nextMsg.author_id === msg.author_id
-    
     const dateMsg = new Date(msg.created_at)
     const datePrev = prevMsg ? new Date(prevMsg.created_at) : null
     const dateNext = nextMsg ? new Date(nextMsg.created_at) : null
-
     let timeDiffPrev = Infinity
     if (datePrev && !isNaN(dateMsg) && !isNaN(datePrev)) {
         timeDiffPrev = (dateMsg - datePrev) / 1000 / 60
     }
-
     let timeDiffNext = Infinity
     if (dateNext && !isNaN(dateMsg) && !isNaN(dateNext)) {
         timeDiffNext = (dateNext - dateMsg) / 1000 / 60
     }
-    
     const GROUP_THRESHOLD = 5 
     const TIME_THRESHOLD = 15
-
     const isFirstInGroup = !isSameAuthorAsPrev || Math.abs(timeDiffPrev) > GROUP_THRESHOLD
     const isLastInGroup = !isSameAuthorAsNext || Math.abs(timeDiffNext) > GROUP_THRESHOLD
     const showTime = !prevMsg || Math.abs(timeDiffPrev) > TIME_THRESHOLD
-
-    return {
-      ...msg,
-      _isFirstInGroup: isFirstInGroup,
-      _isLastInGroup: isLastInGroup,
-      _showTime: showTime
-    }
+    return { ...msg, _isFirstInGroup: isFirstInGroup, _isLastInGroup: isLastInGroup, _showTime: showTime }
   })
 }
 
@@ -156,27 +144,18 @@ function handleScroll() {
   if (messagesContainer.value) {
     const wasAtBottom = isAtBottom.value
     isAtBottom.value = checkIsAtBottom()
-    
-    if (!wasAtBottom && isAtBottom.value) {
-      unreadCount.value = 0
-    }
-    
+    if (!wasAtBottom && isAtBottom.value) { unreadCount.value = 0 }
     const { scrollTop } = messagesContainer.value
-    
     if (scrollTop < 300 && chatStore.hasMore && !chatStore.loading) {
       const firstMessage = chatStore.messages[0]
-      if (firstMessage) {
-        chatStore.fetchMessages(firstMessage.id)
-      }
+      if (firstMessage) { chatStore.fetchMessages(firstMessage.id) }
     }
   }
 }
 
 function handleTyping() {
   clearTimeout(typingTimeout)
-  typingTimeout = setTimeout(() => {
-    chatStore.sendTyping()
-  }, 500)
+  typingTimeout = setTimeout(() => { chatStore.sendTyping() }, 500)
 }
 
 async function sendMessage() {
@@ -214,39 +193,32 @@ async function sendMessage() {
   }
 }
 
-async function handleGifSelect(gif) {
-  showGifPicker.value = false
-  
+async function handlePickerSelect({ type, data }) {
   if (!canPost.value) return
   
-  const sentReplyTo = replyToMessage.value?.id
-  replyToMessage.value = null
-  
-  try {
-    await chatStore.sendMessage(null, [], sentReplyTo, gif)
-    scrollToBottom(true, true)
-  } catch (e) {
-    showToast(e.message || 'Failed to send GIF')
-  }
-}
-
-async function handleEmojiSelect(data, isSticker) {
-  if (!canPost.value) return
-  
-  if (isSticker) {
+  if (type === 'sticker') {
     showEmojiPicker.value = false
     const sentReplyTo = replyToMessage.value?.id
     replyToMessage.value = null
     try {
       const altText = data.name || data.shortcode || 'sticker'
       const stickerHtml = '<img src="' + data.url + '" alt="' + altText + '" class="sticker">'
-      
       await chatStore.sendMessage(stickerHtml, [], sentReplyTo)
       scrollToBottom(true, true)
     } catch (e) {
       showToast(e.message || 'Failed to send sticker')
     }
-  } else {
+  } else if (type === 'gif') {
+    showEmojiPicker.value = false
+    const sentReplyTo = replyToMessage.value?.id
+    replyToMessage.value = null
+    try {
+      await chatStore.sendMessage(null, [], sentReplyTo, data)
+      scrollToBottom(true, true)
+    } catch (e) {
+      showToast(e.message || 'Failed to send GIF')
+    }
+  } else if (type === 'emoji') {
     const textarea = textareaRef.value
     if (textarea) {
       const start = textarea.selectionStart
@@ -262,6 +234,11 @@ async function handleEmojiSelect(data, isSticker) {
       messageInput.value += data
     }
   }
+}
+
+function openPicker(tab) {
+  initialPickerTab.value = tab
+  showEmojiPicker.value = true
 }
 
 function triggerFileInput() {
@@ -323,20 +300,15 @@ function preloadImage(url) {
 watch(lightboxIndex, (newVal) => {
   const sources = lightboxSources.value
   if (!sources.length) return
-
   if (newVal < sources.length - 1) {
     const next = sources[newVal + 1]
     const url = typeof next === 'string' ? next : next.url
-    if (url && !url.match(/\.(mp4|webm|ogg|mov|mp3|wav)$/i)) {
-      preloadImage(url)
-    }
+    if (url && !url.match(/\.(mp4|webm|ogg|mov|mp3|wav)$/i)) { preloadImage(url) }
   }
   if (newVal > 0) {
     const prev = sources[newVal - 1]
     const url = typeof prev === 'string' ? prev : prev.url
-    if (url && !url.match(/\.(mp4|webm|ogg|mov|mp3|wav)$/i)) {
-      preloadImage(url)
-    }
+    if (url && !url.match(/\.(mp4|webm|ogg|mov|mp3|wav)$/i)) { preloadImage(url) }
   }
 })
 
@@ -346,16 +318,12 @@ watch(lightboxSources, (newSources) => {
     if (idx < newSources.length - 1) {
        const next = newSources[idx + 1]
        const url = typeof next === 'string' ? next : next.url
-       if (url && !url.match(/\.(mp4|webm|ogg|mov|mp3|wav)$/i)) {
-         preloadImage(url)
-       }
+       if (url && !url.match(/\.(mp4|webm|ogg|mov|mp3|wav)$/i)) { preloadImage(url) }
     }
     if (idx > 0) {
        const prev = newSources[idx - 1]
        const url = typeof prev === 'string' ? prev : prev.url
-       if (url && !url.match(/\.(mp4|webm|ogg|mov|mp3|wav)$/i)) {
-         preloadImage(url)
-       }
+       if (url && !url.match(/\.(mp4|webm|ogg|mov|mp3|wav)$/i)) { preloadImage(url) }
     }
   }
 })
@@ -381,74 +349,50 @@ function handleOpenAttachments(attachments) {
         }
         return false;
      });
-
-     if (media.length > 0) {
-        openLightbox(media, 0);
-     }
+     if (media.length > 0) { openLightbox(media, 0); }
   }
 }
 
-function handleSingleImageClick(url) {
-    openLightbox(url)
-}
-
+function handleSingleImageClick(url) { openLightbox(url) }
 function closeLightbox() {
   lightboxSources.value = []
   lightboxIndex.value = 0
   transitionName.value = 'fade'
 }
-
 function nextLightboxImage() {
     if (lightboxIndex.value < lightboxSources.value.length - 1) {
         transitionName.value = 'slide-next'
         lightboxIndex.value++
     }
 }
-
 function prevLightboxImage() {
     if (lightboxIndex.value > 0) {
         transitionName.value = 'slide-prev'
         lightboxIndex.value--
     }
 }
-
 function showToast(message) {
   toast.value = message
   setTimeout(() => toast.value = '', 3000)
 }
-
-function goToLogin() {
-  router.push('/login')
-}
-
+function goToLogin() { router.push('/login') }
 function logout() {
   authStore.logout()
   chatStore.disconnect()
   window.location.reload()
 }
-
 function toggleTheme() {
   currentTheme.value = currentTheme.value === 'imessage' ? 'material' : 'imessage'
   document.documentElement.setAttribute('data-theme', currentTheme.value)
   localStorage.setItem('blog-theme', currentTheme.value)
 }
-
-function openReactionSheet(message) {
-  selectedMessageForDetails.value = message
-}
-
+function openReactionSheet(message) { selectedMessageForDetails.value = message }
 function handleReply(message) {
   if (!canPost.value) return
   replyToMessage.value = message
-  nextTick(() => {
-    textareaRef.value?.focus()
-  })
+  nextTick(() => { textareaRef.value?.focus() })
 }
-
-function cancelReply() {
-  replyToMessage.value = null
-}
-
+function cancelReply() { replyToMessage.value = null }
 function handleKeydown(e) {
     if (lightboxSources.value.length > 0) {
         if (e.key === 'Escape') closeLightbox()
@@ -456,14 +400,9 @@ function handleKeydown(e) {
         if (e.key === 'ArrowLeft') prevLightboxImage()
     }
 }
-
 watch(() => chatStore.messages.length, (newLen, oldLen) => {
   if (newLen > oldLen) {
-    if (isAtBottom.value) {
-      scrollToBottom()
-    } else {
-      unreadCount.value += (newLen - oldLen)
-    }
+    if (isAtBottom.value) { scrollToBottom() } else { unreadCount.value += (newLen - oldLen) }
   }
 })
 
@@ -475,9 +414,7 @@ onMounted(async () => {
   await chatStore.fetchMessages()
   chatStore.connectWebSocket()
   scrollToBottom(false, true)
-  nextTick(() => {
-    isAtBottom.value = true
-  })
+  nextTick(() => { isAtBottom.value = true })
 })
 
 onUnmounted(() => {
@@ -621,7 +558,6 @@ onUnmounted(() => {
           @reply="handleReply"
         />
       </TransitionGroup>
-      
     </div>
 
     <Transition name="scroll-btn">
@@ -663,6 +599,15 @@ onUnmounted(() => {
       </Transition>
       
       <div class="input-row">
+        <button 
+           v-if="!isMd" 
+           @click="triggerFileInput" 
+           class="icon-btn outside-plus-btn" 
+           title="Attach files"
+        >
+          <Icon name="plus" :size="26" :theme="currentTheme" />
+        </button>
+
         <div class="input-container">
           <Transition name="expand">
              <div v-if="selectedFiles.length > 0 && isMd" class="file-preview-inline">
@@ -688,15 +633,17 @@ onUnmounted(() => {
             class="hidden"
             @change="handleFileSelect"
           />
-          <button @click="triggerFileInput" class="icon-btn" title="Attach files">
+
+          <button 
+            v-if="isMd"
+            @click="triggerFileInput" 
+            class="icon-btn" 
+            title="Attach files"
+          >
             <Icon name="plus" :size="26" :theme="currentTheme" />
           </button>
           
-          <button @click="showGifPicker = true" class="icon-btn" title="Add GIF">
-            <Icon name="gif" :size="24" :theme="currentTheme" />
-          </button>
-
-          <button @click="showEmojiPicker = true" class="icon-btn emoji-sticker-btn" title="Emoji & Stickers">
+          <button @click="openPicker('emoji')" class="icon-btn emoji-sticker-btn" title="Emoji & Stickers">
             <Icon name="smile" :size="24" :theme="currentTheme" />
           </button>
           
@@ -717,7 +664,7 @@ onUnmounted(() => {
             title="Send"
           >
             <span class="send-btn-icon">
-              <Icon name="send" :size="18" :theme="currentTheme" />
+              <Icon name="arrow-up" :size="18" :theme="currentTheme" />
             </span>
           </button>
         </div>
@@ -729,7 +676,7 @@ onUnmounted(() => {
           title="Send"
         >
           <span class="send-btn-icon">
-            <Icon name="send" :size="18" :theme="currentTheme" />
+            <Icon name="arrow-up" :size="18" :theme="currentTheme" />
           </span>
         </button>
       </div>
@@ -742,20 +689,11 @@ onUnmounted(() => {
 
     <Teleport to="body">
       <Transition name="fade">
-        <GifPicker
-          v-if="showGifPicker"
-          @select="handleGifSelect"
-          @close="showGifPicker = false"
-        />
-      </Transition>
-    </Teleport>
-
-    <Teleport to="body">
-      <Transition name="fade">
         <EmojiStickerPicker
           v-if="showEmojiPicker"
           :custom-emojis="chatStore.customEmojis"
-          @select="handleEmojiSelect"
+          :initial-tab="initialPickerTab"
+          @select="handlePickerSelect"
           @close="showEmojiPicker = false"
         />
       </Transition>
@@ -764,38 +702,21 @@ onUnmounted(() => {
     <Teleport to="body">
       <Transition name="lightbox">
         <div v-if="lightboxSources.length > 0" class="lightbox" @click="closeLightbox">
-          
           <button v-if="lightboxIndex > 0" class="lightbox-nav prev" @click.stop="prevLightboxImage">
             <Icon name="back" :size="32" :theme="currentTheme" />
           </button>
-          
           <div class="lightbox-counter" v-if="lightboxSources.length > 1">
               {{ lightboxIndex + 1 }} / {{ lightboxSources.length }}
           </div>
-
           <div class="lightbox-content" @click.stop>
               <Transition :name="transitionName">
-                <video 
-                    v-if="lightboxType === 'video'"
-                    :key="'video-'+lightboxImage" 
-                    :src="lightboxImage" 
-                    class="lightbox-image" 
-                    controls 
-                    autoplay
-                />
-                <img 
-                    v-else 
-                    :key="'image-'+lightboxImage" 
-                    :src="lightboxImage" 
-                    class="lightbox-image" 
-                />
+                <video v-if="lightboxType === 'video'" :key="'video-'+lightboxImage" :src="lightboxImage" class="lightbox-image" controls autoplay />
+                <img v-else :key="'image-'+lightboxImage" :src="lightboxImage" class="lightbox-image" />
               </Transition>
           </div>
-
           <button v-if="lightboxIndex < lightboxSources.length - 1" class="lightbox-nav next" @click.stop="nextLightboxImage">
              <Icon name="forward" :size="32" :theme="currentTheme" />
           </button>
-
           <button @click="closeLightbox" class="lightbox-close">
             <Icon name="close" :size="32" :theme="currentTheme" />
           </button>

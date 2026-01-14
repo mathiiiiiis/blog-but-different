@@ -1,5 +1,5 @@
 // ============================================
-// EMOJI/STICKER PICKER
+// EMOJI/STICKER/GIF PICKER
 // ============================================
 
 $spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -19,19 +19,22 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
 .emoji-picker-sheet {
   width: 100%;
   max-width: 420px;
-  max-height: 70vh;
+  height: 70vh;
+  max-height: 700px;
   background: var(--color-bg);
   border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
   animation: sheetSlideIn 0.35s cubic-bezier(0.32, 0.72, 0, 1);
   overflow: hidden;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
 }
 
 .emoji-picker-handle {
   display: flex;
   justify-content: center;
   padding: 12px 0 8px;
+  flex-shrink: 0;
 }
 
 .emoji-picker-handle-bar {
@@ -47,6 +50,7 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
   align-items: center;
   justify-content: space-between;
   padding: 0 16px 12px;
+  flex-shrink: 0;
 }
 
 .emoji-picker-title {
@@ -77,27 +81,28 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .emoji-picker-toggle {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   margin: 0 16px 12px;
   background: var(--input-container-bg);
   border-radius: 12px;
   padding: 4px;
   position: relative;
+  flex-shrink: 0;
 }
 
 .toggle-btn {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 8px 4px;
   background: transparent;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--color-text-secondary);
   transition: color 0.2s;
   position: relative;
@@ -112,23 +117,23 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
   position: absolute;
   top: 4px;
   left: 4px;
-  width: calc(50% - 4px);
+  width: calc(33.333% - 5px); 
   height: calc(100% - 8px);
   background: var(--color-bg);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s $spring-bounce;
   
-  &.right {
-    transform: translateX(100%);
-  }
+  &.pos-emoji { transform: translateX(0%); }
+  &.pos-sticker { transform: translateX(100%) translateX(4px); }
+  &.pos-gif { transform: translateX(200%) translateX(8px); }
 }
 
 .mode-hint {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 16px 12px;
+  margin-bottom: 12px;
   font-size: 12px;
   color: var(--color-text-secondary);
   
@@ -174,7 +179,97 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
   flex: 1;
   overflow-y: auto;
   padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+
+  &.no-padding {
+    padding: 0;
+  }
 }
+
+// --- GIF Specific Styles ---
+
+.gif-search-bar {
+  padding: 0 16px 12px;
+  flex-shrink: 0;
+}
+
+.gif-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--input-container-bg);
+    border-radius: 10px;
+    padding: 0 10px;
+    height: 36px;
+}
+
+.gif-search-icon {
+    color: var(--color-text-secondary);
+    margin-right: 8px;
+}
+
+.gif-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    font-size: 14px;
+    outline: none;
+    
+    &::placeholder {
+        color: var(--color-text-secondary);
+        opacity: 0.7;
+    }
+}
+
+.gif-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+}
+
+.gif-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.gif-item {
+    aspect-ratio: 1.33;
+    background: var(--input-container-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.2s ease;
+    }
+    
+    &:hover img {
+        transform: scale(1.05);
+    }
+}
+
+.gif-status, .gif-loading-more {
+    text-align: center;
+    padding: 24px;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+}
+
+.gif-attribution {
+    text-align: center;
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    margin-top: 12px;
+    opacity: 0.5;
+}
+
+// --- Emoji/Sticker Grids ---
 
 .category-label {
   font-size: 12px;
@@ -245,16 +340,6 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
   &:active {
     transform: scale(0.95);
   }
-  
-  &.sticker-mode {
-    .emoji-char {
-      font-size: 32px;
-    }
-    
-    &:hover {
-      transform: scale(1.2);
-    }
-  }
 }
 
 .emoji-char {
@@ -321,5 +406,10 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
   
   .sticker-grid {
     gap: 12px;
+  }
+
+  .gif-input-wrapper {
+    background: var(--md3-surface-variant, #E7E0EC);
+    border-radius: 16px;
   }
 }
