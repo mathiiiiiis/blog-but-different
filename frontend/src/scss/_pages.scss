@@ -415,15 +415,6 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   z-index: 40;
   transition: transform 0.2s $spring-bounce, box-shadow 0.2s;
-  
-  &:hover {
-    transform: translateX(-50%) scale(1.05);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-  }
-  
-  &:active {
-    transform: translateX(-50%) scale(0.95);
-  }
 }
 
 .scroll-btn-enter-active {
