@@ -138,11 +138,10 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   background: rgba(0, 0, 0, 0.05);
   border-left: 4px solid rgba(0, 0, 0, 0.2);
   font-size: 12px;
-  max-width: 280px;
-
-  @media (max-width: 768px) {
-    max-width: 210px;
-  }
+  width: calc(120px + 8vw);
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .reply-author {
@@ -255,7 +254,8 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   border-left: 4px solid var(--bubble-sent-bg);
   padding-left: 8px;
   overflow: hidden;
-  max-width: 280px;
+  flex: 1;
+  min-width: 0;
   animation: slideInLeft 0.25s $spring-bounce 0.05s backwards;
 }
 

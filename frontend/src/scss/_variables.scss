@@ -45,7 +45,7 @@
 [data-theme="material"] {
   // --- Theme: Material Design 3 ---
   --font-family: 'Google Sans', 'Roboto', sans-serif;
-  
+
   --color-bg: #FEF7FF;
   --color-header-bg: #F3EDF7;
   --color-header-border: transparent;
@@ -55,52 +55,72 @@
 
   --color-text: #1D1B20;
   --color-text-secondary: #49454F;
-  
+
   --bubble-sent-bg: #6750A4;
   --bubble-sent-text: #FFFFFF;
   --bubble-received-bg: #E8DEF8;
   --bubble-received-text: #1D1B20;
 
-  --radius-bubble: 20px;
-  --radius-bubble-sm: 4px;
+  --radius-bubble: 24px;
+  --radius-bubble-sm: 6px;
 
   --input-container-bg: #F3EDF7;
   --input-bg: #FFFFFF;
   --input-border: #79747E;
-  --input-radius: 16px;
+  --input-radius: 24px;
 
-  --avatar-radius: 8px;
+  --avatar-radius: 12px;
   --avatar-border: none;
   --avatar-border-hover: none;
   --avatar-border-active: 3px solid #6750A4;
 
   --animation-message-enter: md3MessageEnter 0.55s cubic-bezier(0.05, 0.7, 0.1, 1.0);
   --animation-message-move: transform 0.4s cubic-bezier(0.05, 0.7, 0.1, 1.0);
-  
+
   --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
   --spring-snappy: cubic-bezier(0.2, 0.9, 0.3, 1.1);
   --md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   --md3-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   --md3-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md3-expressive: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   --md3-primary: #6750A4;
   --md3-on-primary: #FFFFFF;
   --md3-primary-container: #EADDFF;
   --md3-on-primary-container: #21005D;
+
+  // MD3 secondary (teal/cyan)
+  --md3-secondary: #625B71;
+  --md3-on-secondary: #FFFFFF;
+  --md3-secondary-container: #E8DEF8;
+  --md3-on-secondary-container: #1D192B;
+
+  // MD3 tertiary (pink/coral)
+  --md3-tertiary: #7D5260;
+  --md3-on-tertiary: #FFFFFF;
+  --md3-tertiary-container: #FFD8E4;
+  --md3-on-tertiary-container: #31111D;
+
   --md3-surface: #FEF7FF;
+  --md3-on-surface: #1D1B20;
   --md3-surface-variant: #E7E0EC;
   --md3-on-surface-variant: #49454F;
   --md3-outline: #79747E;
   --md3-outline-variant: #CAC4D0;
-  
+
   --md3-surface-tint: #6750A4;
   --md3-surface-container: #F3EDF7;
   --md3-surface-container-high: #ECE6F0;
   --md3-surface-container-highest: #E6E0E9;
   --md3-surface-container-low: #F7F2FA;
   --md3-surface-container-lowest: #FFFFFF;
-  
+
+  // MD3 error colors
+  --md3-error: #B3261E;
+  --md3-error-container: #F9DEDC;
+  --md3-on-error-container: #410E0B;
+
   --md3-state-hover: 0.08;
   --md3-state-focus: 0.12;
   --md3-state-pressed: 0.12;

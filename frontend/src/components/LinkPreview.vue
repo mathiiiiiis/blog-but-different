@@ -10,11 +10,13 @@ const props = defineProps({
 const metaData = ref({
   title: null,
   image: null,
+  favicon: null,
   description: null
 })
 
 const loading = ref(true)
 const error = ref(false)
+const imageLoadError = ref(false)
 
 const domain = computed(() => {
   try {
@@ -25,20 +27,34 @@ const domain = computed(() => {
   }
 })
 
-const isMd = computed(() => props.theme === 'material')
+const displayImage = computed(() => {
+  if (metaData.value.image && !imageLoadError.value) {
+    return { type: 'banner', url: metaData.value.image }
+  }
+  if (metaData.value.favicon) {
+    return { type: 'favicon', url: metaData.value.favicon }
+  }
+  return null
+})
+
+function onImageError() {
+  imageLoadError.value = true
+}
 
 async function fetchMetadata() {
   loading.value = true
   error.value = false
-  
+  imageLoadError.value = false
+
   try {
     const response = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(props.url)}`)
     const result = await response.json()
-    
+
     if (result.status === 'success') {
       metaData.value = {
         title: result.data.title || domain.value,
         image: result.data.image?.url || null,
+        favicon: result.data.logo?.url || null,
         description: result.data.description || result.data.url
       }
     } else {
@@ -59,14 +75,36 @@ onMounted(() => {
 
 <template>
   <div class="link-preview" :class="theme">
-    <a :href="url" target="_blank" class="link-preview-card">
+    <div v-if="loading" class="link-preview-card link-preview-skeleton">
+      <div class="link-preview-image-placeholder skeleton-pulse"></div>
+      <div class="link-preview-info">
+        <div class="skeleton-line skeleton-title"></div>
+        <div class="skeleton-line skeleton-desc"></div>
+      </div>
+    </div>
 
-      <div v-if="metaData.image" class="link-preview-image-container">
-         <img :src="metaData.image" alt="Link preview" class="link-preview-img" loading="lazy" />
+    <a v-else :href="url" target="_blank" class="link-preview-card">
+      <div v-if="displayImage?.type === 'banner'" class="link-preview-image-container">
+        <img
+          :src="displayImage.url"
+          alt="Link preview"
+          class="link-preview-img"
+          loading="lazy"
+          @error="onImageError"
+        />
+      </div>
+
+      <div v-else-if="displayImage?.type === 'favicon'" class="link-preview-image-placeholder link-preview-favicon">
+        <img
+          :src="displayImage.url"
+          alt="Site icon"
+          class="link-preview-favicon-img"
+          @error="onImageError"
+        />
       </div>
 
       <div v-else class="link-preview-image-placeholder">
-         <Icon name="search" :size="24" :theme="theme" />
+        <Icon name="link" :size="24" :theme="theme" />
       </div>
 
       <div class="link-preview-info">

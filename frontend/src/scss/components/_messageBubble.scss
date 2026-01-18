@@ -223,9 +223,11 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
 .bubble {
   max-width: 80vw;
   width: fit-content;
-  margin-left: 6px; 
+  margin-left: 6px;
   overflow: hidden;
-  
+  display: flex;
+  flex-direction: column;
+
   .bubble-text {
     overflow-wrap: anywhere;
     word-break: break-word;

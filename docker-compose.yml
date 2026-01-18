@@ -2,6 +2,7 @@ services:
   # === Database ===
   db:
     image: postgres:16-alpine
+    container_name: blog-db
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -16,10 +17,32 @@ services:
       retries: 5
     networks:
       - blog-network
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: blog-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin/pgpass:/pgadmin4/pgpass:ro
+    ports:
+      - "5050:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - blog-network
 
   # === Storage ===
   minio:
     image: minio/minio:latest
+    container_name: blog-minio
     restart: always
     command: server /data --console-address ":9001"
     volumes:
@@ -37,6 +60,7 @@ services:
 
   # === Backend ===
   backend:
+    container_name: blog-backend
     build: 
       context: ./backend
       dockerfile: Dockerfile
@@ -66,6 +90,7 @@ services:
 
   # === Frontend ===
   frontend:
+    container_name: blog-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -80,6 +105,7 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  pgadmin_data:
 
 networks:
   blog-network:

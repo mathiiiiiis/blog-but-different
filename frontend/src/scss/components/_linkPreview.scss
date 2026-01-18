@@ -4,7 +4,9 @@
 
 .link-preview {
   margin-top: 8px;
+  width: calc(140px + 8vw);
   max-width: 100%;
+  min-width: 0;
 }
 
 .link-preview-card {
@@ -17,14 +19,10 @@
   color: inherit;
   transition: background-color 0.15s;
   border: 1px solid rgba(0,0,0,0.05);
-
   cursor: pointer;
-
-  width: 320px;
-  max-width: 100%;
-  min-width: 0;
+  width: 100%;
   box-sizing: border-box;
-  height: 80px;
+  height: 72px;
 
   &:hover {
     background: rgba(0,0,0,0.08);
@@ -32,7 +30,7 @@
 }
 
 .link-preview-image-container {
-  width: 80px;
+  width: 72px;
   height: 100%;
   overflow: hidden;
   position: relative;
@@ -47,7 +45,7 @@
 }
 
 .link-preview-image-placeholder {
-  width: 80px;
+  width: 72px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -57,6 +55,17 @@
   flex-shrink: 0;
 }
 
+.link-preview-favicon {
+  background: rgba(0,0,0,0.03);
+}
+
+.link-preview-favicon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
 .link-preview-info {
   padding: 8px 12px;
   display: flex;
@@ -64,6 +73,7 @@
   justify-content: center;
   min-width: 0;
   flex: 1;
+  overflow: hidden;
 }
 
 .link-preview-title {
@@ -85,44 +95,109 @@
   white-space: nowrap;
 }
 
+.link-preview-skeleton {
+  pointer-events: none;
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  background: rgba(0,0,0,0.08);
+  border-radius: 4px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+
+  &.skeleton-title {
+    width: 70%;
+    height: 14px;
+    margin-bottom: 6px;
+  }
+
+  &.skeleton-desc {
+    width: 50%;
+    height: 10px;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
 // --- Material Design 3 Overrides ---
 
 .link-preview.material {
   .link-preview-card {
     flex-direction: column;
     width: 100%;
-    max-width: 280px;
     height: auto;
-    border-radius: 12px;
-    background: var(--md3-surface, #FFFFFF);
+    border-radius: 28px;
+    background: var(--md3-surface-container, #F3EDF7);
     border: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-    
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s var(--md3-emphasized, ease), box-shadow 0.2s ease;
+
     &:hover {
-      background: var(--md3-surface, #FFFFFF);
-      filter: brightness(0.98);
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 8px 24px rgba(103, 80, 164, 0.15);
+    }
+
+    &:active {
+      transform: scale(0.97);
     }
   }
 
   .link-preview-image-container {
     width: 100%;
-    height: 150px;
-    border-radius: 0;
+    height: 140px;
+    border-radius: 28px 28px 0 0;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: linear-gradient(transparent, rgba(103, 80, 164, 0.08));
+      pointer-events: none;
+    }
   }
 
   .link-preview-image-placeholder {
     width: 100%;
-    height: 150px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--md3-primary-container, #EADDFF) 0%, var(--md3-tertiary-container, #FFD8E4) 100%);
+    color: var(--md3-on-primary-container, #21005D);
+  }
+
+  .link-preview-favicon {
+    height: 72px;
+    background: linear-gradient(135deg, var(--md3-secondary-container, #E8DEF8) 0%, var(--md3-primary-container, #EADDFF) 100%);
+  }
+
+  .link-preview-favicon-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
 
   .link-preview-info {
-    padding: 12px 16px;
+    padding: 16px 20px;
     justify-content: flex-start;
   }
 
   .link-preview-title {
-    font-size: 14px;
-    margin-bottom: 4px;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
     white-space: normal;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -133,7 +208,39 @@
   }
 
   .link-preview-domain {
-    font-size: 12px;
-    color: var(--md3-on-surface-variant, #49454F);
+    font-size: 13px;
+    color: var(--md3-primary, #6750A4);
+    font-weight: 500;
+    opacity: 1;
+  }
+
+  .link-preview-skeleton {
+    .link-preview-image-placeholder {
+      background: linear-gradient(135deg, #E8DEF8 0%, #FFD8E4 100%);
+      animation: skeleton-shimmer 2s ease-in-out infinite;
+    }
+  }
+
+  .skeleton-line {
+    background: var(--md3-surface-variant, rgba(0,0,0,0.08));
+    border-radius: 8px;
+
+    &.skeleton-title {
+      height: 18px;
+      margin-bottom: 8px;
+    }
+
+    &.skeleton-desc {
+      height: 14px;
+    }
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
   }
 }
