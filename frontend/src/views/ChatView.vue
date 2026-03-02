@@ -153,7 +153,15 @@ function handleScroll() {
   }
 }
 
+function resizeTextarea() {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = el.scrollHeight + 'px'
+}
+
 function handleTyping() {
+  resizeTextarea()
   clearTimeout(typingTimeout)
   typingTimeout = setTimeout(() => { chatStore.sendTyping() }, 500)
 }
@@ -173,9 +181,10 @@ async function sendMessage() {
   selectedFiles.value = []
   replyToMessage.value = null
   sendBtnState.value = 'sending'
-  
+
   nextTick(() => {
     textareaRef.value?.focus()
+    resizeTextarea()
   })
   
   try {

@@ -312,7 +312,7 @@ function cancelLongPress() {
 
     <div 
       class="message-container"
-      :class="{ 'justify-end': message.is_admin }"
+      :class="{ 'justify-end': message.is_admin, 'is-dragging': isDragging }"
       :style="swipeStyle"
       @touchstart="handleTouchStart"
       @touchmove="handleTouchMove"

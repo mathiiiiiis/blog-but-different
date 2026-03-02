@@ -301,8 +301,8 @@ $md3-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15); //accelerate
 // ============================================
 
 [data-theme="material"] {
-  --animation-message-enter: md3MessageEnter 0.55s #{$md3-emphasized};
-  --animation-message-move: transform 0.4s #{$md3-emphasized};
+  --animation-message-enter: md3MessageEnter 0.5s #{$spring-bounce};
+  --animation-message-move: transform 0.45s #{$spring-bounce};
   
   .reaction-btn {
     &.just-added { animation: md3ReactionPop 0.45s $spring-bounce; }

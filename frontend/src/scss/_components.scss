@@ -505,10 +505,10 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
 
 .input-container {
   display: flex;
-  align-items: center; 
+  align-items: center;
   gap: 8px;
-  padding: 6px 12px; 
-  background: var(--input-bg);
+  padding: 6px 12px;
+  background: transparent;
   border: 1px solid var(--input-border);
   border-radius: 20px; 
   flex: 1;
@@ -727,7 +727,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   }
 
   .input-container {
-    background: var(--md3-surface, #FEF7FF);
+    background: transparent;
     border: 1.5px solid var(--md3-outline-variant, #CAC4D0);
     border-radius: 28px;
     padding: 8px 12px;
