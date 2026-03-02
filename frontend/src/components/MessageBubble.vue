@@ -37,7 +37,15 @@ const isLongPress = ref(false)
 
 const formattedTime = computed(() => {
   const date = new Date(props.message.created_at)
-  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  const now = new Date()
+  const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  if (date.toDateString() === now.toDateString()) return time
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  if (date.toDateString() === yesterday.toDateString()) return `Yesterday ${time}`
+  const isThisYear = date.getFullYear() === now.getFullYear()
+  const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric', ...(isThisYear ? {} : { year: 'numeric' }) })
+  return `${dateStr} ${time}`
 })
 
 const avatarUrl = computed(() => {

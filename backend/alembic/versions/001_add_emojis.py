@@ -38,6 +38,11 @@ def index_exists(table_name: str, index_name: str) -> bool:
 
 
 def upgrade() -> None:
+    #on a fresh db == base tables dont exist yet
+    #create_all handles the full schema
+    if not table_exists('users'):
+        return
+
     if not table_exists('custom_emojis'):
         op.create_table(
             'custom_emojis',

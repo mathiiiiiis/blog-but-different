@@ -74,9 +74,7 @@ function handleClose() {
 }
 
 function handleDelete() {
-  if (confirm('Delete this message?')) {
-    emit('delete')
-  }
+  emit('delete')
 }
 
 function handleClickOutside(e) {

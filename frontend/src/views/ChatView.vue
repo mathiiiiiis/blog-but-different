@@ -518,7 +518,6 @@ onUnmounted(() => {
           :message="message"
           :current-user="authStore.user"
           :is-admin="isAdmin"
-          :can-post="canPost"
           :is-first-in-group="message._isFirstInGroup"
           :is-last-in-group="message._isLastInGroup"
           :show-time="false"
@@ -536,6 +535,7 @@ onUnmounted(() => {
       <div v-if="!chatStore.loading && chatStore.messages.length === 0 && pinnedMessages.length === 0" class="empty-state">
         <Icon name="chat" :size="64" class="empty-state-icon" :theme="currentTheme" />
         <h2 class="empty-state-text">No messages yet</h2>
+        <p class="empty-state-subtitle">React when the first message appears</p>
       </div>
       
       <TransitionGroup name="message">
@@ -545,7 +545,6 @@ onUnmounted(() => {
           :message="message"
           :current-user="authStore.user"
           :is-admin="isAdmin"
-          :can-post="canPost"
           :is-first-in-group="message._isFirstInGroup"
           :is-last-in-group="message._isLastInGroup"
           :show-time="message._showTime"
@@ -593,7 +592,9 @@ onUnmounted(() => {
             <div v-else class="file-preview-placeholder">
               <Icon :name="getFileIcon(file)" :size="24" :theme="currentTheme" />
             </div>
-            <button @click="removeFile(index)" class="file-preview-remove">x</button>
+            <button @click="removeFile(index)" class="file-preview-remove">
+              <Icon name="close" :size="10" :theme="currentTheme" />
+            </button>
           </div>
         </div>
       </Transition>
@@ -620,7 +621,9 @@ onUnmounted(() => {
                   <div v-else class="file-preview-placeholder">
                     <Icon :name="getFileIcon(file)" :size="24" :theme="currentTheme" />
                   </div>
-                  <button @click="removeFile(index)" class="file-preview-remove">x</button>
+                  <button @click="removeFile(index)" class="file-preview-remove">
+                    <Icon name="close" :size="10" :theme="currentTheme" />
+                  </button>
                 </div>
              </div>
           </Transition>

@@ -991,7 +991,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
 
   .new-messages-indicator {
     border-radius: 20px;
-    background: --md3-primary, #6750A4;
+    background: var(--md3-primary, #6750A4);
     font-weight: 600;
     transition: all 0.2s var(--md3-expressive);
   }
