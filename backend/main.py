@@ -7,7 +7,7 @@ from sqlalchemy import select, func, delete
 from sqlalchemy.orm import selectinload
 from typing import Optional, List, cast
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import asyncio
 import json
 import os
@@ -18,7 +18,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from config import get_settings
-from database import get_db, init_db
+from database import get_db, init_db, AsyncSessionLocal
 from models import User, Message, Reaction, CustomEmoji
 from schemas import (
     LoginRequest, PasswordChangeRequest, TokenResponse,
@@ -39,6 +39,8 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 limiter = Limiter(key_func=get_remote_address)
+
+MAX_MESSAGE_LENGTH = 10_000
 
 
 # ============ FILE HELPERS ============
@@ -115,6 +117,29 @@ async def read_file_with_limit(file: UploadFile, max_size: int) -> bytes:
     return b"".join(chunks)
 
 
+async def _guest_cleanup_loop():
+    """background task: every hour delete offline guest users created more than 24h ago"""
+    while True:
+        await asyncio.sleep(3600)
+        try:
+            cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+            online_ids = list(manager.user_connections.keys())
+            async with AsyncSessionLocal() as db:
+                stmt = delete(User).where(
+                    User.is_admin == False,
+                    User.email == None,
+                    User.created_at < cutoff,
+                )
+                if online_ids:
+                    stmt = stmt.where(User.id.notin_(online_ids))
+                result = await db.execute(stmt)
+                await db.commit()
+                if result.rowcount:
+                    logger.info(f"Cleaned up {result.rowcount} stale guest user(s)")
+        except Exception as e:
+            logger.error(f"Guest cleanup error: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up application...")
@@ -123,7 +148,13 @@ async def lifespan(app: FastAPI):
     os.makedirs(os.path.dirname(settings.avatars_config_path), exist_ok=True)
     os.makedirs("./avatars", exist_ok=True)
     logger.info("Application startup complete")
+    cleanup_task = asyncio.create_task(_guest_cleanup_loop())
     yield
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
     logger.info("Shutting down application...")
 
 
@@ -602,9 +633,15 @@ async def create_message(
             content = args
             is_pinned_init = True
 
+    if content and len(content) > MAX_MESSAGE_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Message content exceeds maximum length of {MAX_MESSAGE_LENGTH} characters"
+        )
+
     if not content and not files and not gif_url:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Message must have content, attachments, or a GIF"
         )
     

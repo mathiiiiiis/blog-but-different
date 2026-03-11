@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import model_validator
 from functools import lru_cache
 import secrets
 import os
@@ -46,6 +47,15 @@ class Settings(BaseSettings):
     #get API key from: https://partner.klipy.com
     klipy_api_key: str = ""
     
+    @model_validator(mode='after')
+    def require_secret_key_in_production(self) -> 'Settings':
+        if not self.debug and not os.environ.get('SECRET_KEY'):
+            raise ValueError(
+                'SECRET_KEY must be explicitly set in the environment for production use. '
+                'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
+            )
+        return self
+
     class Config:
         env_file = ".env"
         extra = "ignore"

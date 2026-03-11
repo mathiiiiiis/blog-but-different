@@ -48,7 +48,7 @@ class Attachment(BaseModel):
     url: str
     name: str
     size: Optional[int] = None
-    object_name: Optional[str] = None
+    object_name: Optional[str] = Field(default=None, exclude=True)
     gif_id: Optional[str] = None
     preview_url: Optional[str] = None
 
