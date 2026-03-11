@@ -63,10 +63,21 @@ const hasContent = computed(() => !!props.message.content)
 const stickerAttachment = computed(() =>
   props.message.attachments?.find(a => a.type === 'sticker') ?? null
 )
-const isSticker = computed(() => !!stickerAttachment.value)
+
+//fallback: detect legacy sticker format
+const legacyStickerData = computed(() => {
+  const content = props.message.content
+  if (!content || stickerAttachment.value) return null
+  const match = content.match(/<img[^>]+class="sticker"[^>]*src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*\/?>/)
+  if (!match) return null
+  return { src: match[1], alt: match[2] || 'Sticker' }
+})
+
+const isSticker = computed(() => !!stickerAttachment.value || !!legacyStickerData.value)
 const stickerData = computed(() => {
   const s = stickerAttachment.value
-  return s ? { src: s.url, alt: s.name || 'Sticker' } : null
+  if (s) return { src: s.url, alt: s.name || 'Sticker' }
+  return legacyStickerData.value
 })
 
 const isConnected = computed(() => isMd.value && hasMedia.value && hasContent.value)
