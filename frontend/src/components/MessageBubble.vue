@@ -68,9 +68,11 @@ const stickerAttachment = computed(() =>
 const legacyStickerData = computed(() => {
   const content = props.message.content
   if (!content || stickerAttachment.value) return null
-  const match = content.match(/<img[^>]+class="sticker"[^>]*src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*\/?>/)
-  if (!match) return null
-  return { src: match[1], alt: match[2] || 'Sticker' }
+  if (!content.includes('class="sticker"')) return null
+  const srcMatch = content.match(/src="([^"]+)"/)
+  const altMatch = content.match(/alt="([^"]*)"/)
+  if (!srcMatch) return null
+  return { src: srcMatch[1], alt: altMatch?.[1] || 'Sticker' }
 })
 
 const isSticker = computed(() => !!stickerAttachment.value || !!legacyStickerData.value)
