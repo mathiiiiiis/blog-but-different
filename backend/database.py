@@ -1,6 +1,4 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from config import get_settings
 from models import Base, User
 import bcrypt
@@ -30,13 +28,6 @@ AsyncSessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
-
-sync_engine = create_engine(
-    settings.database_url_sync, 
-    echo=settings.debug,
-    pool_pre_ping=True,
-)
-SyncSessionLocal = sessionmaker(bind=sync_engine)
 
 
 async def get_db():

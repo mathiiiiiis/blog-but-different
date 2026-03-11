@@ -44,7 +44,7 @@ class UserResponse(BaseModel):
 
 
 class Attachment(BaseModel):
-    type: str  #"image", "audio", "video", "file", "gif"
+    type: str  #"image", "audio", "video", "file", "gif", "sticker"
     url: str
     name: str
     size: Optional[int] = None

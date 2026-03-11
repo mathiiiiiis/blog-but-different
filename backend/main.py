@@ -612,6 +612,8 @@ async def create_message(
     gif_url: Optional[str] = Form(None),  #for GIF messages
     gif_id: Optional[str] = Form(None),
     gif_preview_url: Optional[str] = Form(None),
+    sticker_url: Optional[str] = Form(None),  #for sticker messages
+    sticker_name: Optional[str] = Form(None),
     files: List[UploadFile] = File(default=[]),
     user: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db)
@@ -639,10 +641,10 @@ async def create_message(
             detail=f"Message content exceeds maximum length of {MAX_MESSAGE_LENGTH} characters"
         )
 
-    if not content and not files and not gif_url:
+    if not content and not files and not gif_url and not sticker_url:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Message must have content, attachments, or a GIF"
+            detail="Message must have content, attachments, a GIF, or a sticker"
         )
     
     attachments = []
@@ -655,6 +657,14 @@ async def create_message(
             "name": "GIF",
             "gif_id": gif_id,
             "preview_url": gif_preview_url
+        })
+
+    #handle sticker attachment
+    if sticker_url:
+        attachments.append({
+            "type": "sticker",
+            "url": sticker_url,
+            "name": sticker_name or "Sticker",
         })
     
     for file in files:

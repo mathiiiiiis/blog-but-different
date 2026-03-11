@@ -473,51 +473,48 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
 // --- Inputs ---
 
 .composer-wrapper {
-  background: transparent;
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 
 .input-row {
   display: flex;
-  align-items: center; 
+  align-items: flex-end;
   gap: 8px;
   padding: 8px 12px;
   padding-bottom: max(12px, env(safe-area-inset-bottom));
   background: transparent;
 
   &::before {
-    content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      var(--input-border) 20%,
-      var(--input-border) 80%,
-      transparent
-    );
     opacity: 0.5;
   }
 }
 
+.composer-input-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 20px;
+}
+
 .input-container {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   padding: 6px 12px;
   background: transparent;
-  border: 1px solid var(--input-border);
-  border-radius: 20px; 
   flex: 1;
-  transition: background-color 0.3s, border-color 0.2s, box-shadow 0.2s;
-  
-  &:focus-within {
-    border-color: var(--bubble-sent-bg);
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-  }
 
   @media (max-width: 640px) {
     gap: 4px;
@@ -534,6 +531,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 7px;
     
     &:hover {
         background: #d1d5db;
@@ -616,14 +614,14 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--bubble-sent-bg);
+  background: var(--send-btn-bg);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: transform 0.2s $spring-bounce, opacity 0.15s, box-shadow 0.15s, background-color 0.2s;
+  transition: transform 0.2s $spring-bounce, box-shadow 0.15s, background-color 0.2s;
   box-shadow: none;
   flex-shrink: 0;
   position: relative;
@@ -645,8 +643,10 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   }
   
   &:disabled {
-    opacity: 0;
+    opacity: 1;
     pointer-events: none;
+    background: #AEAEB2;
+    color: #ffffff;
   }
   
   &.send-btn--sending {
@@ -714,7 +714,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
 
   .input-row {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 12px;
     padding: 8px 12px;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
@@ -726,25 +726,16 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
     }
   }
 
-  .input-container {
-    background: transparent;
+  .composer-input-group {
     border: 1.5px solid var(--md3-outline-variant, #CAC4D0);
     border-radius: 28px;
+  }
+
+  .input-container {
+    background: transparent;
     padding: 8px 12px;
     gap: 4px;
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s var(--md3-expressive);
-
-    &:focus-within {
-      border-color: var(--md3-primary, #6750A4);
-      border-width: 2px;
-      padding: 7px 11px;
-      box-shadow: 0 0 0 4px rgba(103, 80, 164, 0.12);
-    }
+    align-items: flex-end;
   }
 
   .message-input {
@@ -803,7 +794,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
     &:disabled {
       background: var(--md3-surface-variant, #E7E0EC);
       color: var(--md3-on-surface-variant, #49454F);
-      opacity: 0.5;
+      opacity: 1;
       box-shadow: none;
     }
   }
@@ -986,7 +977,7 @@ $md3-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   .reply-preview {
     background: var(--md3-surface-variant, #E7E0EC);
     border-top: none;
-    border-radius: 24px 24px 0px 0px;
+    border-radius: 28px 28px 5px 5px;
   }
 
   .new-messages-indicator {

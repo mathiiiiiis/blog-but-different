@@ -60,23 +60,13 @@ const hasMedia = computed(() => hasAttachments.value || hasGif.value)
 const hasContent = computed(() => !!props.message.content)
 
 //detect sticker messages
-const isSticker = computed(() => {
-  const content = props.message.content
-  if (!content) return false
-  return content.trim().startsWith('<img') && content.includes('class="sticker"')
-})
-
-//safe extraction of sticker data
+const stickerAttachment = computed(() =>
+  props.message.attachments?.find(a => a.type === 'sticker') ?? null
+)
+const isSticker = computed(() => !!stickerAttachment.value)
 const stickerData = computed(() => {
-  if (!isSticker.value) return null
-  const content = props.message.content
-  const srcMatch = content.match(/src="([^"]+)"/)
-  const altMatch = content.match(/alt="([^"]+)"/)
-  
-  return {
-    src: srcMatch ? srcMatch[1] : '',
-    alt: altMatch ? altMatch[1] : 'Sticker'
-  }
+  const s = stickerAttachment.value
+  return s ? { src: s.url, alt: s.name || 'Sticker' } : null
 })
 
 const isConnected = computed(() => isMd.value && hasMedia.value && hasContent.value)
@@ -393,7 +383,7 @@ function cancelLongPress() {
                 <div v-if="message.reply_to" class="reply-context">
                    <div class="reply-author">{{ message.reply_to.author_username }}</div>
                    <div class="reply-text">
-                     {{ message.reply_to.content?.includes('class="sticker"') ? 'Sticker' : (message.reply_to.content || 'Attachment') }}
+                     {{ message.reply_to.content || 'Attachment' }}
                    </div>
                 </div>
 

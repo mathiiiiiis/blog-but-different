@@ -15,6 +15,7 @@ const authStore = useAuthStore()
 const chatStore = useChatStore()
 
 const messagesContainer = ref(null)
+const composerWrapper = ref(null)
 const textareaRef = ref(null)
 const messageInput = ref('')
 const fileInput = ref(null)
@@ -187,7 +188,9 @@ function resizeTextarea() {
   const el = textareaRef.value
   if (!el) return
   el.style.height = 'auto'
-  el.style.height = el.scrollHeight + 'px'
+  const maxHeight = 120
+  el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px'
+  el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden'
 }
 
 function handleTyping() {
@@ -240,9 +243,10 @@ async function handlePickerSelect({ type, data }) {
     const sentReplyTo = replyToMessage.value?.id
     replyToMessage.value = null
     try {
-      const altText = data.name || data.shortcode || 'sticker'
-      const stickerHtml = '<img src="' + data.url + '" alt="' + altText + '" class="sticker">'
-      await chatStore.sendMessage(stickerHtml, [], sentReplyTo)
+      await chatStore.sendMessage(null, [], sentReplyTo, null, {
+        url: data.url,
+        name: data.name || data.shortcode || 'Sticker'
+      })
       scrollToBottom(true, true)
     } catch (e) {
       showToast(e.message || 'Failed to send sticker')
@@ -448,9 +452,20 @@ watch(
   }
 )
 
+let composerObserver = null
+
 onMounted(async () => {
   document.documentElement.setAttribute('data-theme', currentTheme.value)
   window.addEventListener('keydown', handleKeydown)
+
+  composerObserver = new ResizeObserver(([entry]) => {
+    const h = entry.contentRect.height +
+      parseFloat(getComputedStyle(entry.target).paddingTop || 0) +
+      parseFloat(getComputedStyle(entry.target).paddingBottom || 0)
+    document.documentElement.style.setProperty('--composer-height', h + 'px')
+  })
+  if (composerWrapper.value) composerObserver.observe(composerWrapper.value)
+
   await chatStore.fetchAvatars()
   await chatStore.fetchCustomEmojis()
   await chatStore.fetchMessages()
@@ -463,6 +478,7 @@ onUnmounted(() => {
   chatStore.disconnect()
   window.removeEventListener('keydown', handleKeydown)
   clearTimeout(typingTimeout)
+  composerObserver?.disconnect()
 })
 </script>
 
@@ -612,17 +628,7 @@ onUnmounted(() => {
       </button>
     </Transition>
 
-    <div v-if="canPost" class="composer-wrapper">
-      <div v-if="replyToMessage" class="reply-preview">
-        <div class="reply-preview-content">
-          <span class="reply-preview-label">Replying to {{ replyToMessage.author_username }}</span>
-          <span class="reply-preview-text">{{ replyToMessage.content || 'Attachment' }}</span>
-        </div>
-        <button @click="cancelReply" class="reply-preview-close">
-          <Icon name="close" :size="20" :theme="currentTheme" />
-        </button>
-      </div>
-
+    <div v-if="canPost" ref="composerWrapper" class="composer-wrapper">
       <Transition name="expand">
         <div v-if="selectedFiles.length > 0 && !isMd" class="file-preview-container">
           <div
@@ -651,7 +657,20 @@ onUnmounted(() => {
           <Icon name="plus" :size="26" :theme="currentTheme" />
         </button>
 
-        <div class="input-container">
+        <div class="composer-input-group">
+          <Transition name="expand">
+            <div v-if="replyToMessage" class="reply-preview">
+              <div class="reply-preview-content">
+                <span class="reply-preview-label">Replying to {{ replyToMessage.author_username }}</span>
+                <span class="reply-preview-text">{{ replyToMessage.content || 'Attachment' }}</span>
+              </div>
+              <button @click="cancelReply" class="reply-preview-close">
+                <Icon name="close" :size="20" :theme="currentTheme" />
+              </button>
+            </div>
+          </Transition>
+
+          <div class="input-container">
           <Transition name="expand">
              <div v-if="selectedFiles.length > 0 && isMd" class="file-preview-inline">
                <div
@@ -712,8 +731,9 @@ onUnmounted(() => {
               <Icon name="arrow-up" :size="18" :theme="currentTheme" />
             </span>
           </button>
+          </div>
         </div>
-        
+
         <button
           @click="sendMessage"
           :disabled="!hasContent"

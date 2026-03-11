@@ -113,16 +113,22 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
   
-  async function sendMessage(content, files = [], replyToId = null, gif = null) {
+  async function sendMessage(content, files = [], replyToId = null, gif = null, sticker = null) {
     const formData = new FormData()
     if (content) formData.append('content', content)
     if (replyToId) formData.append('reply_to_id', replyToId)
-    
+
     //handle GIF
     if (gif) {
       formData.append('gif_url', gif.url)
       formData.append('gif_id', gif.id)
       if (gif.preview_url) formData.append('gif_preview_url', gif.preview_url)
+    }
+
+    //handle sticker
+    if (sticker) {
+      formData.append('sticker_url', sticker.url)
+      if (sticker.name) formData.append('sticker_name', sticker.name)
     }
     
     files.forEach(file => formData.append('files', file))
