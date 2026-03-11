@@ -17,8 +17,9 @@ class ConnectionManager:
         self.connection_info: Dict[str, dict] = {}
         self._lock = asyncio.Lock()
     
-    async def connect(self, websocket: WebSocket, user_id: str, user_info: dict) -> str:
-        await websocket.accept()
+    async def connect(self, websocket: WebSocket, user_id: str, user_info: dict, already_accepted: bool = False) -> str:
+        if not already_accepted:
+            await websocket.accept()
         connection_id = str(uuid.uuid4())
         
         async with self._lock:

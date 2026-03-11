@@ -85,19 +85,19 @@ export const useChatStore = defineStore('chat', () => {
     return msg
   }
   
-  async function fetchMessages(before = null) {
-    loading.value = true
+  async function fetchMessages(before = null, { silent = false } = {}) {
+    if (!silent) loading.value = true
     try {
       let url = '/api/messages?limit=50'
       if (before) url += `&before=${before}`
-      
+
       const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
-        
+
         //hydrate messages with custom emoji URLs
         const hydratedMessages = (data.messages || []).map(hydrateMessageReactions)
-        
+
         if (before) {
           messages.value = [...hydratedMessages, ...messages.value]
         } else {
@@ -105,11 +105,11 @@ export const useChatStore = defineStore('chat', () => {
           messages.value = hydratedMessages
           pinnedMessages.value = (data.pinned_messages || []).map(hydrateMessageReactions)
         }
-        
+
         hasMore.value = data.has_more
       }
     } finally {
-      loading.value = false
+      if (!silent) loading.value = false
     }
   }
   
@@ -228,13 +228,14 @@ export const useChatStore = defineStore('chat', () => {
   
   function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const wsUrl = `${protocol}//${window.location.host}/ws${authStore.token ? `?token=${authStore.token}` : ''}`
-    
+    const wsUrl = `${protocol}//${window.location.host}/ws`
+
     ws.value = new WebSocket(wsUrl)
-    
+
     ws.value.onopen = () => {
       wsConnected.value = true
       console.log('WebSocket connected')
+      ws.value.send(JSON.stringify({ type: 'auth', token: authStore.token || null }))
     }
     
     ws.value.onclose = () => {

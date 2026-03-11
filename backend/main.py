@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, UploadFile, File, Form, Query
+from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, UploadFile, File, Form, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
@@ -8,10 +8,14 @@ from sqlalchemy.orm import selectinload
 from typing import Optional, List, cast
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import asyncio
 import json
 import os
 import logging
 import httpx
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from config import get_settings
 from database import get_db, init_db
@@ -33,6 +37,82 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 settings = get_settings()
+
+limiter = Limiter(key_func=get_remote_address)
+
+
+# ============ FILE HELPERS ============
+
+def _detect_file_type(data: bytes) -> Optional[str]:
+    """return a broad MIME category from magic bytes, or None if unrecognised"""
+    if len(data) < 4:
+        return None
+    #images
+    if data[:3] == b'\xff\xd8\xff':
+        return 'image/jpeg'
+    if data[:8] == b'\x89PNG\r\n\x1a\n':
+        return 'image/png'
+    if data[:6] in (b'GIF87a', b'GIF89a'):
+        return 'image/gif'
+    if data[:4] == b'RIFF' and len(data) >= 12 and data[8:12] == b'WEBP':
+        return 'image/webp'
+    if data[:2] == b'BM':
+        return 'image/bmp'
+    #audio
+    if data[:3] == b'ID3':
+        return 'audio/mpeg'
+    if data[:2] in (b'\xff\xfb', b'\xff\xfa', b'\xff\xf3', b'\xff\xf2'):
+        return 'audio/mpeg'
+    if data[:4] == b'OggS':
+        return 'audio/ogg'
+    if data[:4] == b'fLaC':
+        return 'audio/flac'
+    if data[:4] == b'RIFF' and len(data) >= 12 and data[8:12] == b'WAVE':
+        return 'audio/wav'
+    #video
+    if data[:4] == b'\x1a\x45\xdf\xa3':
+        return 'video/webm'
+    if len(data) >= 12 and data[4:8] == b'ftyp':
+        return 'video/mp4'
+    return None
+
+_BLOCKED_TYPES = {'image/svg+xml', 'text/html', 'application/javascript', 'application/x-php'}
+
+
+def validate_file_magic(data: bytes, claimed_content_type: str, filename: str) -> None:
+    """raise HTTPException if file magic bytes dont match claimed content type"""
+    ct = claimed_content_type.lower().split(';')[0].strip()
+    if ct in _BLOCKED_TYPES:
+        raise HTTPException(status_code=400, detail=f"File type '{ct}' is not allowed")
+    detected = _detect_file_type(data)
+    if detected is None:
+        raise HTTPException(status_code=400, detail=f"Unrecognised file type for '{filename}'")
+    claimed_category = ct.split('/')[0]
+    detected_category = detected.split('/')[0]
+    if claimed_category != detected_category:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File content for '{filename}' does not match its Content-Type"
+        )
+
+
+async def read_file_with_limit(file: UploadFile, max_size: int) -> bytes:
+    """read an uploaded file in 1 MB chunks, raising 413 before buffering whole thing"""
+    chunks: List[bytes] = []
+    total = 0
+    while True:
+        chunk = await file.read(1024 * 1024)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > max_size:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File '{file.filename}' exceeds the maximum allowed size "
+                       f"({max_size // (1024 * 1024)} MB)"
+            )
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 
 @asynccontextmanager
@@ -58,6 +138,9 @@ app = FastAPI(
     docs_url=docs_url,
     redoc_url=redoc_url
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 cors_origins = settings.cors_origins.split(",") if settings.cors_origins != "*" else ["*"]
 
@@ -152,7 +235,9 @@ async def update_avatar(avatar: str, user: User = Depends(get_current_user), db:
 # ============ GIF ROUTES ============
 
 @app.get("/api/gifs/search", response_model=GifSearchResponse)
+@limiter.limit("30/minute")
 async def search_gifs(
+    request: Request,
     q: str = Query(..., min_length=1, description="Search query"),
     limit: int = Query(20, ge=1, le=50),
     pos: Optional[str] = Query(None, description="Pagination position"),
@@ -211,7 +296,9 @@ async def search_gifs(
 
 
 @app.get("/api/gifs/trending", response_model=GifSearchResponse)
+@limiter.limit("30/minute")
 async def trending_gifs(
+    request: Request,
     limit: int = Query(20, ge=1, le=50),
     pos: Optional[str] = Query(None),
     user: User = Depends(get_current_user)
@@ -296,13 +383,9 @@ async def create_custom_emoji(
     #validate file
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
-    
-    file_data = await file.read()
-    if len(file_data) > settings.max_file_size:
-        raise HTTPException(
-            status_code=400,
-            detail="File exceeds maximum allowed size (5mb)"
-        )
+
+    file_data = await read_file_with_limit(file, settings.max_file_size)
+    validate_file_magic(file_data, file.content_type, file.filename or name)
     
     #upload to storage
     object_name = upload_file(file_data, f"{name}.png", file.content_type, "emojis")
@@ -490,7 +573,9 @@ async def handle_slash_command(
 
 
 @app.post("/api/messages")
+@limiter.limit("30/minute")
 async def create_message(
+    request: Request,
     content: Optional[str] = Form(None),
     reply_to_id: Optional[str] = Form(None),
     gif_url: Optional[str] = Form(None),  #for GIF messages
@@ -538,6 +623,10 @@ async def create_message(
     for file in files:
         if file.filename:
             content_type = file.content_type or "application/octet-stream"
+
+            file_data = await read_file_with_limit(file, settings.max_file_size)
+            validate_file_magic(file_data, content_type, file.filename)
+
             if content_type.startswith("image/"):
                 file_type, folder = "image", "images"
             elif content_type.startswith("audio/"):
@@ -546,16 +635,7 @@ async def create_message(
                 file_type, folder = "video", "video"
             else:
                 file_type, folder = "file", "files"
-            
-            file_data = await file.read()
-            
-            #check file size
-            if len(file_data) > settings.max_file_size:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"File {file.filename} exceeds maximum size of {settings.max_file_size // (1024*1024)}MB"
-                )
-            
+
             object_name = upload_file(file_data, file.filename, content_type, folder)
             file_url = get_file_url(object_name)
             
@@ -657,16 +737,18 @@ async def delete_message(
 # ============ REACTION ROUTES ============
 
 @app.post("/api/messages/{message_id}/reactions")
+@limiter.limit("60/minute")
 async def add_reaction(
+    request: Request,
     message_id: str,
-    request: ReactionCreate,
+    body: ReactionCreate,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
-    if not request.emoji or len(request.emoji) > 50:
+    if not body.emoji or len(body.emoji) > 50:
         raise HTTPException(status_code=400, detail="Invalid emoji")
     
     result = await db.execute(select(Message).where(Message.id == message_id))
@@ -677,8 +759,8 @@ async def add_reaction(
     #check for custom emoji
     custom_emoji = None
     custom_emoji_url = None
-    if request.custom_emoji_id:
-        result = await db.execute(select(CustomEmoji).where(CustomEmoji.id == request.custom_emoji_id))
+    if body.custom_emoji_id:
+        result = await db.execute(select(CustomEmoji).where(CustomEmoji.id == body.custom_emoji_id))
         custom_emoji = result.scalar_one_or_none()
         if custom_emoji:
             custom_emoji_url = custom_emoji.url
@@ -687,7 +769,7 @@ async def add_reaction(
         select(Reaction).where(
             Reaction.message_id == message_id,
             Reaction.user_id == user.id,
-            Reaction.emoji == request.emoji
+            Reaction.emoji == body.emoji
         )
     )
     existing = result.scalar_one_or_none()
@@ -699,7 +781,7 @@ async def add_reaction(
             "type": "reaction_removed",
             "data": {
                 "message_id": message_id, 
-                "emoji": request.emoji, 
+                "emoji": body.emoji, 
                 "user_id": str(user.id), 
                 "username": user.username,
                 "avatar": user.avatar or "default",
@@ -711,8 +793,8 @@ async def add_reaction(
     reaction = Reaction(
         message_id=message_id, 
         user_id=user.id, 
-        emoji=request.emoji,
-        custom_emoji_id=request.custom_emoji_id
+        emoji=body.emoji,
+        custom_emoji_id=body.custom_emoji_id
     )
     db.add(reaction)
     await db.commit()
@@ -721,7 +803,7 @@ async def add_reaction(
         "type": "reaction_added",
         "data": {
             "message_id": message_id, 
-            "emoji": request.emoji, 
+            "emoji": body.emoji, 
             "user_id": str(user.id), 
             "username": user.username,
             "avatar": user.avatar or "default",
@@ -735,37 +817,44 @@ async def add_reaction(
 
 @app.websocket("/ws")
 async def websocket_endpoint(
-    websocket: WebSocket, 
-    token: Optional[str] = None, 
+    websocket: WebSocket,
     db: AsyncSession = Depends(get_db)
 ):
-    """WebSocket endpoint for real-time updates"""
+    await websocket.accept()
     user = None
-    
-    if token:
-        from jose import jwt, JWTError
-        try:
-            payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-            user_id = cast(Optional[str], payload.get("sub"))
-            if user_id:
-                result = await db.execute(select(User).where(User.id == user_id))
-                user = result.scalar_one_or_none()
-        except JWTError:
-            logger.warning("Invalid JWT token in WebSocket connection")
-    
+
+    #expect first message to carry auth token > so it never appears in URLs/logs
+    try:
+        first_msg = await asyncio.wait_for(websocket.receive_json(), timeout=5.0)
+        token = first_msg.get("token") if isinstance(first_msg, dict) else None
+        if token:
+            from jose import jwt, JWTError
+            try:
+                payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+                user_id = cast(Optional[str], payload.get("sub"))
+                if user_id:
+                    result = await db.execute(select(User).where(User.id == user_id))
+                    user = result.scalar_one_or_none()
+            except JWTError:
+                logger.warning("Invalid JWT token in WebSocket auth message")
+    except asyncio.TimeoutError:
+        logger.debug("WebSocket auth message not received within timeout; treating as guest")
+    except Exception as e:
+        logger.warning(f"Error reading WebSocket auth message: {e}")
+
     if not user:
         guest_id = generate_guest_id()
         user = User(username=guest_id, is_admin=False, avatar="default")
         db.add(user)
         await db.commit()
         await db.refresh(user)
-    
+
     user_info = {
-        "username": user.username, 
-        "avatar": user.avatar or "default", 
+        "username": user.username,
+        "avatar": user.avatar or "default",
         "is_admin": user.is_admin
     }
-    await manager.connect(websocket, str(user.id), user_info)
+    await manager.connect(websocket, str(user.id), user_info, already_accepted=True)
     
     new_token = create_access_token(data={"sub": str(user.id)}) if not token else None
     

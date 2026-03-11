@@ -140,15 +140,45 @@ function jumpToBottom() {
   }
 }
 
+//track in-flight background prefetch to avoid duplicate requests
+let prefetchPending = false
+
+async function loadOlderMessages(silent = false) {
+  if (!chatStore.hasMore) return
+  if (silent && prefetchPending) return
+  if (!silent && chatStore.loading) return
+
+  const firstMessage = chatStore.messages[0]
+  if (!firstMessage) return
+
+  const container = messagesContainer.value
+  if (!container) return
+
+  //snapshot scroll state before new messages are prepended
+  const prevScrollHeight = container.scrollHeight
+  const prevScrollTop = container.scrollTop
+
+  if (silent) prefetchPending = true
+  try {
+    await chatStore.fetchMessages(firstMessage.id, { silent })
+  } finally {
+    if (silent) prefetchPending = false
+  }
+
+  //restore position so viewport doesnt jump
+  await nextTick()
+  container.scrollTop = prevScrollTop + (container.scrollHeight - prevScrollHeight)
+}
+
 function handleScroll() {
   if (messagesContainer.value) {
     const wasAtBottom = isAtBottom.value
     isAtBottom.value = checkIsAtBottom()
     if (!wasAtBottom && isAtBottom.value) { unreadCount.value = 0 }
     const { scrollTop } = messagesContainer.value
-    if (scrollTop < 300 && chatStore.hasMore && !chatStore.loading) {
-      const firstMessage = chatStore.messages[0]
-      if (firstMessage) { chatStore.fetchMessages(firstMessage.id) }
+    //prefetch silently well before top so data is ready when needed
+    if (scrollTop < 800 && chatStore.hasMore && !chatStore.loading && !prefetchPending) {
+      loadOlderMessages(true)
     }
   }
 }
@@ -409,11 +439,14 @@ function handleKeydown(e) {
         if (e.key === 'ArrowLeft') prevLightboxImage()
     }
 }
-watch(() => chatStore.messages.length, (newLen, oldLen) => {
-  if (newLen > oldLen) {
-    if (isAtBottom.value) { scrollToBottom() } else { unreadCount.value += (newLen - oldLen) }
+watch(
+  () => [chatStore.messages.length, chatStore.messages[chatStore.messages.length - 1]?.id],
+  ([newLen, newLastId], [oldLen, oldLastId]) => {
+    if (newLen > oldLen && newLastId !== oldLastId) {
+      if (isAtBottom.value) { scrollToBottom() } else { unreadCount.value += (newLen - oldLen) }
+    }
   }
-})
+)
 
 onMounted(async () => {
   document.documentElement.setAttribute('data-theme', currentTheme.value)
