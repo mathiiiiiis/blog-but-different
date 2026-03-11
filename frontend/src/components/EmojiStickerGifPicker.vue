@@ -191,10 +191,6 @@ onMounted(() => {
       </div>
 
       <div v-if="mode === 'sticker'" class="emoji-picker-content">
-        <div class="mode-hint">
-            <Icon name="info" :size="14" />
-            <span>Stickers send as big custom emoji</span>
-        </div>
         <div class="category-label">Custom Stickers</div>
         
         <div v-if="filteredStickers.length > 0" class="sticker-grid">
@@ -271,10 +267,6 @@ onMounted(() => {
         </div>
 
         <div class="emoji-picker-content">
-          <div class="mode-hint">
-            <Icon name="info" :size="14" />
-            <span>Emoji inserts into your message</span>
-          </div>
           <div class="category-label">
             {{ emojiCategories[activeCategory]?.name }}
           </div>
