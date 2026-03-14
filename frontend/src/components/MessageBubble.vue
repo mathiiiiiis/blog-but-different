@@ -68,7 +68,7 @@ const avatarUrl = computed(() => {
 
 const isMd = computed(() => props.theme === 'material')
 
-const hasAttachments = computed(() => props.message.attachments && props.message.attachments.length > 0)
+const hasAttachments = computed(() => props.message.attachments?.some(a => a.type !== 'sticker') ?? false)
 const hasGif = computed(() => !!props.message.gif_url)
 const hasMedia = computed(() => hasAttachments.value || hasGif.value)
 const hasContent = computed(() => !!props.message.content)
@@ -136,7 +136,7 @@ const swipeStyle = computed(() => {
   return {}
 })
 
-const firstAttachment = computed(() => hasAttachments.value ? props.message.attachments[0] : null)
+const firstAttachment = computed(() => hasAttachments.value ? props.message.attachments.find(a => a.type !== 'sticker') : null)
 const remainingAttachmentsCount = computed(() => hasAttachments.value ? props.message.attachments.length - 1 : 0)
 
 const linkUrl = computed(() => {
