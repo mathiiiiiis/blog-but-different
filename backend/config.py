@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     #GIF Support - Klipy API
     #get API key from: https://partner.klipy.com
     klipy_api_key: str = ""
+
+    #Firebase Cloud Messaging
+    fcm_credentials_path: str = ""
     
     @model_validator(mode='after')
     def require_secret_key_in_production(self) -> 'Settings':

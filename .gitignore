@@ -36,3 +36,5 @@ uploads/*
 # Misc
 .cache/
 coverage/
+
+firebase/

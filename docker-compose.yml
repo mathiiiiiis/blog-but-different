@@ -80,6 +80,9 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD}
       KLIPY_API_KEY: ${KLIPY_API_KEY}
+      FCM_CREDENTIALS_PATH: /app/firebase-credentials.json
+    volumes: # change this to the path on your server
+     - /opt/liveblog/firebase-credentials.json:/app/firebase-credentials.json:ro
     depends_on:
       db:
         condition: service_healthy

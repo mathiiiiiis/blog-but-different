@@ -173,6 +173,14 @@ class Message(Base):
     )
 
 
+class FCMToken(Base):
+    __tablename__ = "fcm_tokens"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    token: Mapped[str] = mapped_column(String(512), unique=True, nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class Reaction(Base):
     __tablename__ = "reactions"
     

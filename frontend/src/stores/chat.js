@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useAuthStore } from './auth'
+import { messaging, VAPID_KEY } from '../firebase'
+import { getToken } from 'firebase/messaging'
 
 export const useChatStore = defineStore('chat', () => {
   const messages = ref([])
@@ -300,6 +302,7 @@ export const useChatStore = defineStore('chat', () => {
           //update can_post status
           authStore.user.can_post = data.data.can_post
         }
+        setupNotifications()
         break
         
       case 'new_message':
@@ -456,6 +459,28 @@ export const useChatStore = defineStore('chat', () => {
     })
   }
   
+  async function setupNotifications() {
+    try {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') return
+
+      const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg })
+      if (!token) return
+
+      await fetch('/api/fcm/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authStore.token}`
+        },
+        body: JSON.stringify({ token })
+      })
+    } catch (e) {
+      console.error('Failed to set up push notifications:', e)
+    }
+  }
+
   function sendTyping() {
     if (ws.value && wsConnected.value) {
       ws.value.send(JSON.stringify({ type: 'typing' }))
@@ -519,6 +544,7 @@ export const useChatStore = defineStore('chat', () => {
     searchGifs,
     getTrendingGifs,
     connectWebSocket,
+    setupNotifications,
     sendTyping,
     updateAvatar,
     disconnect,

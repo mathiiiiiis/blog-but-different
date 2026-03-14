@@ -19,7 +19,7 @@ from slowapi.errors import RateLimitExceeded
 
 from config import get_settings
 from database import get_db, init_db, AsyncSessionLocal
-from models import User, Message, Reaction, CustomEmoji
+from models import User, Message, Reaction, CustomEmoji, FCMToken
 from schemas import (
     LoginRequest, PasswordChangeRequest, TokenResponse,
     GuestCreate, UserResponse, MessageResponse, MessageEdit,
@@ -35,6 +35,55 @@ from storage import init_minio, upload_file, get_file_url, delete_file
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+_fcm_app = None
+
+def _get_fcm_app():
+    global _fcm_app
+    if _fcm_app is not None:
+        return _fcm_app
+    path = settings.fcm_credentials_path
+    if not path:
+        return None
+    try:
+        import firebase_admin
+        from firebase_admin import credentials as fb_credentials
+        creds = fb_credentials.Certificate(path)
+        _fcm_app = firebase_admin.initialize_app(creds)
+    except Exception as e:
+        logger.error(f"Failed to initialize Firebase Admin: {e}")
+    return _fcm_app
+
+
+async def _send_fcm_push(title: str, body: str, db: AsyncSession):
+    fcm_app = _get_fcm_app()
+    if not fcm_app:
+        return
+    try:
+        from firebase_admin import messaging as fcm_messaging
+        result = await db.execute(select(FCMToken.token))
+        tokens = result.scalars().all()
+        if not tokens:
+            return
+        response = fcm_messaging.send_each([
+            fcm_messaging.Message(
+                notification=fcm_messaging.Notification(title=title, body=body),
+                token=t,
+            )
+            for t in tokens
+        ])
+        # prune dead tokens
+        dead = [
+            tokens[i] for i, r in enumerate(response.responses)
+            if not r.success and r.exception and 'registration-token-not-registered' in str(r.exception)
+        ]
+        if dead:
+            await db.execute(
+                delete(FCMToken).where(FCMToken.token.in_(dead))
+            )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"FCM send error: {e}")
 
 settings = get_settings()
 
@@ -261,6 +310,23 @@ async def update_avatar(avatar: str, user: User = Depends(get_current_user), db:
     user.avatar = avatar
     await db.commit()
     return {"message": "Avatar updated", "avatar": avatar}
+
+
+# ============ FCM ROUTES ============
+
+@app.post("/api/fcm/register")
+async def register_fcm_token(
+    body: dict,
+    db: AsyncSession = Depends(get_db)
+):
+    token = body.get("token", "").strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Missing token")
+    existing = await db.execute(select(FCMToken).where(FCMToken.token == token))
+    if not existing.scalar_one_or_none():
+        db.add(FCMToken(token=token))
+        await db.commit()
+    return {"ok": True}
 
 
 # ============ GIF ROUTES ============
@@ -717,7 +783,12 @@ async def create_message(
     
     response = build_message_response(message)
     await manager.broadcast({"type": "new_message", "data": response.model_dump(mode="json")})
-    
+
+    notif_body = message.content or "Sent an attachment"
+    if len(notif_body) > 100:
+        notif_body = notif_body[:100] + "…"
+    await _send_fcm_push(f"New post from {user.username}", notif_body, db)
+
     return response
 
 
