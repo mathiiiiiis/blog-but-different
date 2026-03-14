@@ -44,29 +44,25 @@ def _get_fcm_app():
         return _fcm_app
     path = settings.fcm_credentials_path
     if not path:
-        logger.warning("FCM: no credentials path configured")
         return None
     try:
         import firebase_admin
         from firebase_admin import credentials as fb_credentials
         creds = fb_credentials.Certificate(path)
         _fcm_app = firebase_admin.initialize_app(creds)
-        logger.info("FCM: Firebase Admin initialized successfully")
     except Exception as e:
-        logger.error(f"FCM: Failed to initialize Firebase Admin: {e}")
+        logger.error(f"Failed to initialize Firebase Admin: {e}")
     return _fcm_app
 
 
 async def _send_fcm_push(title: str, body: str, db: AsyncSession):
     fcm_app = _get_fcm_app()
     if not fcm_app:
-        logger.warning("FCM: no app, skipping push")
         return
     try:
         from firebase_admin import messaging as fcm_messaging
         result = await db.execute(select(FCMToken.token))
         tokens = result.scalars().all()
-        logger.info(f"FCM: sending push to {len(tokens)} token(s)")
         if not tokens:
             return
         response = fcm_messaging.send_each([
@@ -76,7 +72,6 @@ async def _send_fcm_push(title: str, body: str, db: AsyncSession):
             )
             for t in tokens
         ])
-        logger.info(f"FCM: {response.success_count} sent, {response.failure_count} failed")
         dead = [
             tokens[i] for i, r in enumerate(response.responses)
             if not r.success and r.exception and 'registration-token-not-registered' in str(r.exception)

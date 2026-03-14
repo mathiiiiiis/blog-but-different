@@ -18,6 +18,7 @@ export const useChatStore = defineStore('chat', () => {
   const customEmojis = ref([])
   
   const authStore = useAuthStore()
+  let notificationsSetUp = false
 
   async function fetchAvatars() {
     try {
@@ -460,6 +461,8 @@ export const useChatStore = defineStore('chat', () => {
   }
   
   async function setupNotifications() {
+    if (notificationsSetUp) return
+    notificationsSetUp = true
     try {
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') return
