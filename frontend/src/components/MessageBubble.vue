@@ -420,8 +420,8 @@ function cancelLongPress() {
                   </div>
               </div>
 
-              <div 
-                v-if="message.content || (!isMd && hasMedia)"
+              <div
+                v-if="message.content || (!isMd && hasMedia) || isSticker"
                 class="bubble"
                 :class="bubbleClass"
               >
