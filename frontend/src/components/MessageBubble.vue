@@ -16,7 +16,7 @@ const props = defineProps({
   theme: { type: String, default: 'imessage' }
 })
 
-const emit = defineEmits(['react', 'delete', 'imageClick', 'openAttachments', 'showDetails', 'reply'])
+const emit = defineEmits(['react', 'delete', 'imageClick', 'openAttachments', 'showDetails', 'reply', 'edit'])
 
 const chatStore = useChatStore()
 const showReactionPicker = ref(false)
@@ -34,6 +34,20 @@ const dragThreshold = 10
 //mouse long press state
 let longPressTimer = null
 const isLongPress = ref(false)
+
+const formattedEditTime = computed(() => {
+  if (!props.message.edited_at) return ''
+  const date = new Date(props.message.edited_at)
+  const now = new Date()
+  const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  if (date.toDateString() === now.toDateString()) return `Edited at ${time}`
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  if (date.toDateString() === yesterday.toDateString()) return `Edited yesterday at ${time}`
+  const isThisYear = date.getFullYear() === now.getFullYear()
+  const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric', ...(isThisYear ? {} : { year: 'numeric' }) })
+  return `Edited ${dateStr} at ${time}`
+})
 
 const formattedTime = computed(() => {
   const date = new Date(props.message.created_at)
@@ -112,9 +126,14 @@ const swipeStyle = computed(() => {
   if (!props.isAdmin) return {}
   if (!isSwiping.value || isScrolling.value || !isDragging.value) return {}
   const diff = touchCurrentX.value - touchStartX.value
-  if (diff > 0) return {}
-  const translate = Math.max(diff * 0.4, -80)
-  return { transform: `translateX(${translate}px)` }
+  if (diff < 0) {
+    const translate = Math.max(diff * 0.4, -80)
+    return { transform: `translateX(${translate}px)` }
+  } else if (diff > 0 && props.message.content) {
+    const translate = Math.min(diff * 0.4, 80)
+    return { transform: `translateX(${translate}px)` }
+  }
+  return {}
 })
 
 const firstAttachment = computed(() => hasAttachments.value ? props.message.attachments[0] : null)
@@ -229,9 +248,14 @@ function handleTouchEnd() {
     return
   }
   const diff = touchCurrentX.value - touchStartX.value
-  if (props.isAdmin && isDragging.value && diff < -swipeThreshold) {
-    if (navigator.vibrate) navigator.vibrate(50)
-    emit('reply', props.message)
+  if (props.isAdmin && isDragging.value) {
+    if (diff < -swipeThreshold) {
+      if (navigator.vibrate) navigator.vibrate(50)
+      emit('reply', props.message)
+    } else if (diff > swipeThreshold && props.message.content) {
+      if (navigator.vibrate) navigator.vibrate(50)
+      emit('edit', props.message)
+    }
   }
   resetSwipeState()
 }
@@ -272,9 +296,14 @@ function handleMouseMove(e) {
 function handleMouseUp() {
   cancelLongPress()
   const diff = touchCurrentX.value - touchStartX.value
-  if (props.isAdmin && isDragging.value && diff < -swipeThreshold) {
-    if (navigator.vibrate) navigator.vibrate(50)
-    emit('reply', props.message)
+  if (props.isAdmin && isDragging.value) {
+    if (diff < -swipeThreshold) {
+      if (navigator.vibrate) navigator.vibrate(50)
+      emit('reply', props.message)
+    } else if (diff > swipeThreshold && props.message.content) {
+      if (navigator.vibrate) navigator.vibrate(50)
+      emit('edit', props.message)
+    }
   }
   resetSwipeState()
 }
@@ -352,6 +381,9 @@ function cancelLongPress() {
                 </button>
                 <button @click.stop="toggleReactionPicker" class="action-btn" title="React">
                   <Icon name="smile" :size="16" :theme="theme" />
+                </button>
+                <button v-if="isAdmin && hasContent" @click.stop="emit('edit', message)" class="action-btn" title="Edit">
+                  <Icon name="pencil" :size="16" :theme="theme" />
                 </button>
                 <button v-if="isAdmin" @click.stop="handlePin" class="action-btn" :class="{ 'active': message.is_pinned }" :title="message.is_pinned ? 'Unpin' : 'Pin'">
                   <Icon name="pin" :size="16" :theme="theme" />
@@ -435,8 +467,12 @@ function cancelLongPress() {
                 <p v-if="message.content && !isSticker" class="bubble-text">
                   {{ message.content }}
                 </p>
-                
+
                 <LinkPreview v-if="linkUrl" :url="linkUrl" :theme="theme" />
+
+                <span v-if="message.edited_at" class="edited-indicator" :title="formattedEditTime">
+                  <Icon name="pencil" :size="10" :theme="theme" />
+                </span>
               </div>
             </div>
 

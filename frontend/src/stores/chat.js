@@ -166,6 +166,24 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  async function editMessage(messageId, content) {
+    const res = await fetch(`/api/messages/${messageId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`
+      },
+      body: JSON.stringify({ content })
+    })
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ detail: 'Failed to edit message' }))
+      throw new Error(error.detail || 'Failed to edit message')
+    }
+
+    return await res.json()
+  }
+
   async function pinMessage(messageId) {
     const res = await fetch(`/api/messages/${messageId}/pin`, {
       method: 'POST',
@@ -368,6 +386,21 @@ export const useChatStore = defineStore('chat', () => {
       case 'custom_emoji_removed':
         customEmojis.value = customEmojis.value.filter(e => e.id !== data.data.id)
         break
+
+      case 'message_edited': {
+        const edited = data.data
+        const msg = messages.value.find(m => m.id === edited.id)
+        if (msg) {
+          msg.content = edited.content
+          msg.edited_at = edited.edited_at
+        }
+        const pinned = pinnedMessages.value.find(m => m.id === edited.id)
+        if (pinned) {
+          pinned.content = edited.content
+          pinned.edited_at = edited.edited_at
+        }
+        break
+      }
     }
   }
   
@@ -479,6 +512,7 @@ export const useChatStore = defineStore('chat', () => {
     deleteCustomEmoji,
     fetchMessages,
     sendMessage,
+    editMessage,
     deleteMessage,
     pinMessage,
     toggleReaction,

@@ -6,7 +6,7 @@
 $spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
 
-/* --- Sticker Styles --- */
+// --- Sticker Styles ---
 
 .sticker-content {
     line-height: 0;
@@ -232,6 +232,18 @@ $spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
     word-break: break-word;
     white-space: pre-wrap;
     min-width: 0;
+  }
+
+  .edited-indicator {
+    display: inline-flex;
+    align-self: flex-end;
+    opacity: 0.45;
+    margin-top: 2px;
+    cursor: default;
+
+    &:hover {
+      opacity: 0.75;
+    }
   }
 }
 

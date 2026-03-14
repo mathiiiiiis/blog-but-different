@@ -25,6 +25,7 @@ const showEmojiPicker = ref(false)
 const showAdminPanel = ref(false)
 const selectedMessageForDetails = ref(null)
 const replyToMessage = ref(null)
+const editingMessage = ref(null)
 const toast = ref('')
 
 const initialPickerTab = ref('emoji')
@@ -202,14 +203,33 @@ function handleTyping() {
 async function sendMessage() {
   const content = messageInput.value.trim()
   const files = selectedFiles.value
-  
+
   if (!content && files.length === 0) return
   if (!canPost.value) return
-  
+
+  if (editingMessage.value) {
+    const toEdit = editingMessage.value
+    messageInput.value = ''
+    editingMessage.value = null
+    sendBtnState.value = 'sending'
+    nextTick(() => { textareaRef.value?.focus(); resizeTextarea() })
+    try {
+      await chatStore.editMessage(toEdit.id, content)
+      sendBtnState.value = 'idle'
+    } catch (e) {
+      messageInput.value = content
+      editingMessage.value = toEdit
+      sendBtnState.value = 'error'
+      showToast(e.message || 'Failed to edit message')
+      setTimeout(() => { sendBtnState.value = 'idle' }, 600)
+    }
+    return
+  }
+
   const sentContent = content
   const sentFiles = [...files]
   const sentReplyTo = replyToMessage.value?.id
-  
+
   messageInput.value = ''
   selectedFiles.value = []
   replyToMessage.value = null
@@ -219,7 +239,7 @@ async function sendMessage() {
     textareaRef.value?.focus()
     resizeTextarea()
   })
-  
+
   try {
     await chatStore.sendMessage(sentContent, sentFiles, sentReplyTo)
     sendBtnState.value = 'idle'
@@ -432,15 +452,30 @@ function toggleTheme() {
 function openReactionSheet(message) { selectedMessageForDetails.value = message }
 function handleReply(message) {
   if (!canPost.value) return
+  editingMessage.value = null
   replyToMessage.value = message
   nextTick(() => { textareaRef.value?.focus() })
 }
 function cancelReply() { replyToMessage.value = null }
+function handleEdit(message) {
+  if (!canPost.value) return
+  replyToMessage.value = null
+  editingMessage.value = message
+  messageInput.value = message.content || ''
+  nextTick(() => { textareaRef.value?.focus(); resizeTextarea() })
+}
+function cancelEdit() {
+  editingMessage.value = null
+  messageInput.value = ''
+  nextTick(() => resizeTextarea())
+}
 function handleKeydown(e) {
     if (lightboxSources.value.length > 0) {
         if (e.key === 'Escape') closeLightbox()
         if (e.key === 'ArrowRight') nextLightboxImage()
         if (e.key === 'ArrowLeft') prevLightboxImage()
+    } else if (e.key === 'Escape' && editingMessage.value) {
+        cancelEdit()
     }
 }
 watch(
@@ -582,6 +617,7 @@ onUnmounted(() => {
           :theme="currentTheme"
           @react="handleReaction"
           @delete="handleDelete"
+          @edit="handleEdit"
           @image-click="handleSingleImageClick"
           @open-attachments="handleOpenAttachments"
           @show-details="openReactionSheet"
@@ -609,6 +645,7 @@ onUnmounted(() => {
           :theme="currentTheme"
           @react="handleReaction"
           @delete="handleDelete"
+          @edit="handleEdit"
           @image-click="handleSingleImageClick"
           @open-attachments="handleOpenAttachments"
           @show-details="openReactionSheet"
@@ -629,29 +666,11 @@ onUnmounted(() => {
     </Transition>
 
     <div v-if="canPost" ref="composerWrapper" class="composer-wrapper">
-      <Transition name="expand">
-        <div v-if="selectedFiles.length > 0 && !isMd" class="file-preview-container">
-          <div
-            v-for="(file, index) in selectedFiles"
-            :key="index"
-            class="file-preview-item"
-          >
-            <img v-if="getFilePreview(file)" :src="getFilePreview(file)" />
-            <div v-else class="file-preview-placeholder">
-              <Icon :name="getFileIcon(file)" :size="24" :theme="currentTheme" />
-            </div>
-            <button @click="removeFile(index)" class="file-preview-remove">
-              <Icon name="close" :size="10" :theme="currentTheme" />
-            </button>
-          </div>
-        </div>
-      </Transition>
-      
       <div class="input-row">
-        <button 
-           v-if="!isMd" 
-           @click="triggerFileInput" 
-           class="icon-btn outside-plus-btn" 
+        <button
+           v-if="!isMd"
+           @click="triggerFileInput"
+           class="icon-btn outside-plus-btn"
            title="Attach files"
         >
           <Icon name="plus" :size="26" :theme="currentTheme" />
@@ -659,7 +678,34 @@ onUnmounted(() => {
 
         <div class="composer-input-group">
           <Transition name="expand">
-            <div v-if="replyToMessage" class="reply-preview">
+            <div v-if="selectedFiles.length > 0" class="file-preview-container">
+              <div
+                v-for="(file, index) in selectedFiles"
+                :key="index"
+                class="file-preview-item"
+              >
+                <img v-if="getFilePreview(file)" :src="getFilePreview(file)" />
+                <div v-else class="file-preview-placeholder">
+                  <Icon :name="getFileIcon(file)" :size="24" :theme="currentTheme" />
+                </div>
+                <button @click="removeFile(index)" class="file-preview-remove">
+                  <Icon name="close" :size="10" :theme="currentTheme" />
+                </button>
+              </div>
+            </div>
+          </Transition>
+
+          <Transition name="expand">
+            <div v-if="editingMessage" class="reply-preview">
+              <div class="reply-preview-content">
+                <span class="reply-preview-label">Editing message</span>
+                <span class="reply-preview-text">{{ editingMessage.content }}</span>
+              </div>
+              <button @click="cancelEdit" class="reply-preview-close">
+                <Icon name="close" :size="20" :theme="currentTheme" />
+              </button>
+            </div>
+            <div v-else-if="replyToMessage" class="reply-preview">
               <div class="reply-preview-content">
                 <span class="reply-preview-label">Replying to {{ replyToMessage.author_username }}</span>
                 <span class="reply-preview-text">{{ replyToMessage.content || 'Attachment' }}</span>
@@ -671,24 +717,6 @@ onUnmounted(() => {
           </Transition>
 
           <div class="input-container">
-          <Transition name="expand">
-             <div v-if="selectedFiles.length > 0 && isMd" class="file-preview-inline">
-               <div
-                  v-for="(file, index) in selectedFiles"
-                  :key="index"
-                  class="file-preview-item"
-                >
-                  <img v-if="getFilePreview(file)" :src="getFilePreview(file)" />
-                  <div v-else class="file-preview-placeholder">
-                    <Icon :name="getFileIcon(file)" :size="24" :theme="currentTheme" />
-                  </div>
-                  <button @click="removeFile(index)" class="file-preview-remove">
-                    <Icon name="close" :size="10" :theme="currentTheme" />
-                  </button>
-                </div>
-             </div>
-          </Transition>
-
           <input
             ref="fileInput"
             type="file"
@@ -717,7 +745,7 @@ onUnmounted(() => {
             @input="handleTyping"
             @keydown.enter.exact.prevent="sendMessage"
             class="message-input"
-            placeholder="Write a new message..."
+            :placeholder="editingMessage ? 'Edit message...' : 'Write a new message...'"
             rows="1"
           ></textarea>
           

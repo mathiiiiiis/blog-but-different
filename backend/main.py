@@ -22,7 +22,7 @@ from database import get_db, init_db, AsyncSessionLocal
 from models import User, Message, Reaction, CustomEmoji
 from schemas import (
     LoginRequest, PasswordChangeRequest, TokenResponse,
-    GuestCreate, UserResponse, MessageResponse,
+    GuestCreate, UserResponse, MessageResponse, MessageEdit,
     MessageList, ReactionCreate, Attachment, MessageReplyInfo,
     CommandResponse, CustomEmojiResponse, GifSearchResult, GifSearchResponse
 )
@@ -520,6 +520,7 @@ def build_message_response(message: Message) -> MessageResponse:
         reactions=list(reaction_map.values()),
         created_at=message.created_at or datetime.now(timezone.utc),
         updated_at=message.updated_at,
+        edited_at=message.edited_at,
         reply_to=reply_info
     )
 
@@ -779,6 +780,42 @@ async def delete_message(
     
     await manager.broadcast({"type": "message_deleted", "data": {"message_id": message_id}})
     return {"message": "Message deleted"}
+
+
+@app.patch("/api/messages/{message_id}")
+async def edit_message(
+    message_id: str,
+    body: MessageEdit,
+    user: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Message).where(Message.id == message_id))
+    message = result.scalar_one_or_none()
+
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    if not message.content:
+        raise HTTPException(status_code=400, detail="Cannot edit attachment-only messages")
+
+    message.content = body.content
+    message.edited_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    result = await db.execute(
+        select(Message).options(
+            selectinload(Message.author),
+            selectinload(Message.reactions).selectinload(Reaction.user),
+            selectinload(Message.reactions).selectinload(Reaction.custom_emoji),
+            selectinload(Message.parent).selectinload(Message.author)
+        ).where(Message.id == message.id)
+    )
+    message = result.scalar_one()
+
+    response = build_message_response(message)
+    await manager.broadcast({"type": "message_edited", "data": response.model_dump(mode="json")})
+
+    return response
 
 
 # ============ REACTION ROUTES ============

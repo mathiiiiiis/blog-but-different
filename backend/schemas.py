@@ -89,6 +89,10 @@ class MessageCreate(MessageBase):
     pass
 
 
+class MessageEdit(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
 class MessageReplyInfo(BaseModel):
     id: str
     content: Optional[str]
@@ -110,6 +114,7 @@ class MessageResponse(BaseModel):
     reactions: List[ReactionSummary] = []
     created_at: datetime
     updated_at: Optional[datetime] = None
+    edited_at: Optional[datetime] = None
     reply_to: Optional[MessageReplyInfo] = None
     
     class Config:

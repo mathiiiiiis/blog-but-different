@@ -139,8 +139,12 @@ class Message(Base):
         index=True
     )
     updated_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        onupdate=func.now(),
+        nullable=True
+    )
+    edited_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
         nullable=True
     )
     attachments: Mapped[list] = mapped_column(
