@@ -133,12 +133,19 @@ export const useAuthStore = defineStore('auth', () => {
       setToken(newToken)
     }
   }
-  
+
+  //clear guest session: deletes cookie and resets state so a fresh guest can be created
+  function clearGuestSession() {
+    deleteCookie('blog_token')
+    token.value = null
+    user.value = null
+  }
+
   //initialize
   if (token.value) {
     fetchUser()
   }
-  
+
   return {
     token,
     user,
@@ -153,5 +160,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateAvatar,
     logout,
     handleWsToken,
+    clearGuestSession,
   }
 })

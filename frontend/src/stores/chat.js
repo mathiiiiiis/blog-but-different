@@ -265,7 +265,7 @@ export const useChatStore = defineStore('chat', () => {
     ws.value.onclose = () => {
       wsConnected.value = false
       console.log('WebSocket disconnected, reconnecting...')
-      setTimeout(connectWebSocket, 3000)
+      setTimeout(() => connectWebSocket(), 3000)
     }
     
     ws.value.onerror = (error) => {

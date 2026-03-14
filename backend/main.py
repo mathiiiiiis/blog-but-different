@@ -908,6 +908,7 @@ async def websocket_endpoint(
     user = None
 
     #expect first message to carry auth token > so it never appears in URLs/logs
+    token = None
     try:
         first_msg = await asyncio.wait_for(websocket.receive_json(), timeout=5.0)
         token = first_msg.get("token") if isinstance(first_msg, dict) else None
@@ -927,6 +928,11 @@ async def websocket_endpoint(
         logger.warning(f"Error reading WebSocket auth message: {e}")
 
     if not user:
+        if token:
+            #token was provided but invalid or user not found => reject rather than create ghost user
+            logger.warning("WebSocket auth: token provided but user not found, closing with 4001")
+            await websocket.close(code=4001)
+            return
         guest_id = generate_guest_id()
         user = User(username=guest_id, is_admin=False, avatar="default")
         db.add(user)
