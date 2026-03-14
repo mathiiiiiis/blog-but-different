@@ -153,23 +153,12 @@ async function loadOlderMessages(silent = false) {
   const firstMessage = chatStore.messages[0]
   if (!firstMessage) return
 
-  const container = messagesContainer.value
-  if (!container) return
-
-  //snapshot scroll state before new messages are prepended
-  const prevScrollHeight = container.scrollHeight
-  const prevScrollTop = container.scrollTop
-
   if (silent) prefetchPending = true
   try {
     await chatStore.fetchMessages(firstMessage.id, { silent })
   } finally {
     if (silent) prefetchPending = false
   }
-
-  //restore position so viewport doesnt jump
-  await nextTick()
-  container.scrollTop = prevScrollTop + (container.scrollHeight - prevScrollHeight)
 }
 
 function handleScroll() {
