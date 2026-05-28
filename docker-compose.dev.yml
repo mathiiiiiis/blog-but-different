@@ -82,6 +82,8 @@ services:
       SECRET_KEY: dev-secret-key-change-in-production
       CORS_ORIGINS: "*"
       KLIPY_API_KEY: ${KLIPY_API_KEY}
+    volumes:
+      - ./avatars:/app/avatars
     ports:
       - "${DEV_BACKEND_PORT:-18000}:8000"
     depends_on:
