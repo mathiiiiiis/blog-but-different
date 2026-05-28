@@ -43,11 +43,10 @@
 }
 
 .login-badge {
-  @include cookie(var(--md3-tertiary-container));
-  @include cookie-spin(34s);
   width: 76px;
   height: 76px;
   margin-bottom: 18px;
+  @include spin-mask(34s);
   color: var(--md3-on-tertiary-container);
 }
 
