@@ -1,0 +1,182 @@
+// ==== view: login ====
+// cookie badge, Quicksand display, containment, morph
+
+@use '../typography' as *;
+@use '../utilities' as *;
+@use '../shapes' as *;
+
+.login-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(90% 70% at 78% 8%, color-mix(in srgb, var(--md3-tertiary-container), transparent 35%) 0%, transparent 60%),
+    radial-gradient(120% 110% at 20% 0%, var(--md3-surface-container-low) 0%, var(--md3-surface-dim) 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 36px 28px 24px;
+  background: var(--md3-surface-container-lowest);
+  border-radius: var(--md3-shape-xxl);
+  box-shadow: var(--md3-elevation-2);
+  animation: scaleIn var(--md3-dur-medium-3) var(--md3-spring-bounce);
+}
+
+// staggered entrance
+.login-head, .login-fields, .login-submit, .login-back {
+  animation: floatIn var(--md3-dur-medium-3) var(--md3-spring-gentle) backwards;
+}
+.login-head    { animation-delay: 0.04s; }
+.login-fields  { animation-delay: 0.10s; }
+.login-submit  { animation-delay: 0.16s; }
+.login-back    { animation-delay: 0.20s; }
+
+.login-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+// accent pop: scalloped badge in tertiary (coral) with a slow idle spin
+.login-badge {
+  @include cookie(var(--md3-tertiary-container));
+  @include cookie-spin(34s);
+  width: 76px;
+  height: 76px;
+  margin-bottom: 18px;
+  color: var(--md3-on-tertiary-container);
+}
+
+// display moment: big Quicksand
+.login-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 1.04;
+  letter-spacing: -0.25px;
+  color: var(--md3-on-surface);
+  margin-bottom: 6px;
+}
+
+.login-sub {
+  @include type(body-medium);
+  color: var(--md3-on-surface-variant);
+  max-width: 26ch;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// containment: one shaded group, structure from shade not floating boxes
+.login-fields {
+  background: var(--md3-surface-container);
+  border-radius: var(--md3-shape-l);
+  overflow: hidden;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px 12px;
+  transition:
+    background-color var(--md3-dur-short-3) var(--md3-easing-standard),
+    box-shadow var(--md3-dur-short-3) var(--md3-easing-emphasized);
+
+  & + & { border-top: 1px solid var(--md3-outline-variant); }
+
+  // filled-field behaviour: tint + bottom indicator on focus
+  &:focus-within {
+    background: color-mix(in srgb, var(--md3-surface-container), var(--md3-primary) 7%);
+    box-shadow: inset 0 -2px 0 var(--md3-primary);
+  }
+}
+
+.field-label {
+  @include type(label-small);
+  color: var(--md3-on-surface-variant);
+  .field:focus-within & { color: var(--md3-primary); }
+}
+
+.field-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--md3-on-surface);
+  @include type(body-large);
+  outline: none;
+  padding: 2px 0;
+
+  &::placeholder { color: var(--md3-on-surface-variant); opacity: 0.6; }
+}
+
+.login-error {
+  @include type(body-small);
+  color: var(--md3-on-error-container);
+  background: var(--md3-error-container);
+  border-radius: var(--md3-shape-s);
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.login-submit {
+  @include type(label-large, true);
+  @include state-layer(var(--md3-primary), var(--md3-on-primary));
+  height: 56px;
+  margin-top: 4px;
+  border: none;
+  border-radius: var(--md3-shape-full);   // resting: pill
+  background: var(--md3-primary);
+  color: var(--md3-on-primary);
+  cursor: pointer;
+  box-shadow: var(--md3-elevation-1);
+  transition:
+    background-color var(--md3-dur-short-3) var(--md3-easing-standard),
+    transform var(--md3-dur-short-4) var(--md3-spring-bounce),
+    border-radius var(--md3-dur-short-4) var(--md3-spring-bounce),
+    box-shadow var(--md3-dur-short-3) var(--md3-easing-emphasized);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--md3-elevation-2);
+  }
+
+  // shape morph + spring squash on press: pill -> rounded square
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+    border-radius: var(--md3-shape-l);
+    box-shadow: var(--md3-elevation-1);
+  }
+
+  &:disabled {
+    background: var(--md3-surface-variant);
+    color: var(--md3-on-surface-variant);
+    box-shadow: none;
+    cursor: default;
+  }
+}
+
+.login-back {
+  @include type(label-large);
+  @include state-layer(transparent, var(--md3-on-surface));
+  align-self: center;
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  border-radius: var(--md3-shape-full);
+  color: var(--md3-on-surface-variant);
+  cursor: pointer;
+}

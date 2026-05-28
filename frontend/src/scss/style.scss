@@ -1,22 +1,23 @@
-// Variables & Theming (must be first!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!)
+// ============================================
+// global entry
+// tokens first, then system layers, then UI partials
+// ============================================
+
+//tokens
 @use 'variables' as *;
 
-// Base styles & Reset
-@use 'base' as *;
+//system
+@use 'reset' as *;
+@use 'typography' as *;
+@use 'motion' as *;
+@use 'utilities' as *;
+@use 'shapes' as *;
 
-// Animations & Transitions
-@use 'animations' as *;
+//views
+@use 'views/login' as *;
+// @use 'views/chat' as *;
 
-// UI Components
-@use 'components' as *;
-@use 'components/messageBubble' as *;
-@use 'components/reactionPicker' as *;
-@use 'components/adminPanel' as *;
-@use 'components/linkPreview' as *;
-@use 'components/emojiStickerGifPicker' as *;
-
-// Modals & Overlays
-@use 'modals' as *;
-
-// Pages / Views
-@use 'pages' as *;
+// components
+// @use 'components/header' as *;
+// @use 'components/composer' as *;
+// @use 'components/messageBubble' as *;
