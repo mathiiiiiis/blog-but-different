@@ -15,9 +15,9 @@
 
 //views
 @use 'views/login' as *;
-// @use 'views/chat' as *;
+@use 'views/chat' as *;
 
-// components
-// @use 'components/header' as *;
+//components
+@use 'components/header' as *;
 // @use 'components/composer' as *;
 // @use 'components/messageBubble' as *;

@@ -1,0 +1,181 @@
+// ==== component: app header ====
+// big display title, then a "you + others online" avatar group beside it
+@use '../typography' as *;
+@use '../utilities' as *;
+@use '../shapes' as *;
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 72px;
+  padding: 10px 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 20;
+  background: var(--md3-surface);
+}
+
+.app-header__lead {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.blog-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  color: var(--md3-on-surface);
+}
+
+// ==== you + others group ====
+.presence-group {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.presence-plus {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--md3-on-surface-variant);
+  user-select: none;
+}
+
+//your avatar
+.head-avatar {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform var(--md3-dur-short-3) var(--md3-spring-bounce);
+
+  //ring
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: var(--md3-primary);
+    -webkit-mask: shape-url("12-sided-cookie") center / contain no-repeat;
+    mask: shape-url("12-sided-cookie") center / contain no-repeat;
+  }
+
+  &:hover { transform: scale(1.06) rotate(-3deg); }
+  &:active { transform: scale(0.93); }
+
+  img,
+  .head-avatar__fallback {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-mask: shape-url("12-sided-cookie") center / contain no-repeat;
+    mask: shape-url("12-sided-cookie") center / contain no-repeat;
+  }
+  .head-avatar__fallback {
+    display: grid;
+    place-items: center;
+    background: var(--md3-primary-container);
+    color: var(--md3-on-primary-container);
+  }
+}
+
+//others online: overlapping cookie avatars
+.head-stack {
+  display: flex;
+  align-items: center;
+}
+.head-stack__item,
+.head-stack__more {
+  width: 30px;
+  height: 30px;
+  margin-left: -10px;
+  -webkit-mask: shape-url("12-sided-cookie") center / contain no-repeat;
+  mask: shape-url("12-sided-cookie") center / contain no-repeat;
+  &:first-child { margin-left: 0; }
+}
+.head-stack__item {
+  padding: 2px;
+  background: var(--md3-surface);
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-mask: shape-url("12-sided-cookie") center / contain no-repeat;
+    mask: shape-url("12-sided-cookie") center / contain no-repeat;
+  }
+}
+.head-stack__more {
+  display: grid;
+  place-items: center;
+  background: var(--md3-secondary-container);
+  color: var(--md3-on-secondary-container);
+  @include type(label-small);
+}
+
+//live presence chip
+.presence {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 11px 3px 9px;
+  border-radius: var(--md3-shape-full);
+  background: var(--md3-surface-container-high);
+  color: var(--md3-on-surface-variant);
+  @include type(label-medium);
+}
+
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+// ==== shared M3 button ====
+.icon-btn {
+  @include state-layer(transparent, var(--md3-on-surface));
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  border-radius: var(--md3-shape-full);
+  color: var(--md3-on-surface-variant);
+  cursor: pointer;
+  transition:
+    background-color var(--md3-dur-short-3) var(--md3-easing-standard),
+    transform var(--md3-dur-short-3) var(--md3-spring-bounce);
+
+  &:active { transform: scale(0.9); }
+}
+
+.text-btn {
+  @include type(label-large, true);
+  @include state-layer(transparent, var(--md3-on-surface));
+  height: 40px;
+  padding: 0 14px;
+  border: none;
+  background: transparent;
+  border-radius: var(--md3-shape-full);
+  color: var(--md3-primary);
+  cursor: pointer;
+}
+
+@media (max-width: 420px) {
+  .presence-plus,
+  .head-stack { display: none; }
+}
