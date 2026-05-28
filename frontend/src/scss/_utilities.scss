@@ -48,3 +48,20 @@
   color: inherit;
   cursor: pointer;
 }
+
+// ==== slanted shape ====
+.shape-slanted {
+  border-radius: var(--md3-shape-m);
+  transform: skewX(-8deg);
+  & > * { transform: skewX(8deg); } //un-skew children
+}
+
+// ==== bun shape ====
+.shape-bun {
+  border-radius: 40% 40% 40% 40% / 80% 80% 20% 20%;
+}
+
+// ==== fan shape ====
+.shape-fan {
+  border-radius: 100% 0 0 0;
+}
