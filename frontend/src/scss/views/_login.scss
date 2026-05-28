@@ -26,7 +26,6 @@
   animation: scaleIn var(--md3-dur-medium-3) var(--md3-spring-bounce);
 }
 
-// staggered entrance
 .login-head, .login-fields, .login-submit, .login-back {
   animation: floatIn var(--md3-dur-medium-3) var(--md3-spring-gentle) backwards;
 }
@@ -43,7 +42,6 @@
   margin-bottom: 28px;
 }
 
-// accent pop: scalloped badge in tertiary (coral) with a slow idle spin
 .login-badge {
   @include cookie(var(--md3-tertiary-container));
   @include cookie-spin(34s);
@@ -53,7 +51,6 @@
   color: var(--md3-on-tertiary-container);
 }
 
-// display moment: big Quicksand
 .login-title {
   font-family: var(--font-display);
   font-weight: 600;
@@ -76,7 +73,6 @@
   gap: 16px;
 }
 
-// containment: one shaded group, structure from shade not floating boxes
 .login-fields {
   background: var(--md3-surface-container);
   border-radius: var(--md3-shape-l);
@@ -94,7 +90,6 @@
 
   & + & { border-top: 1px solid var(--md3-outline-variant); }
 
-  // filled-field behaviour: tint + bottom indicator on focus
   &:focus-within {
     background: color-mix(in srgb, var(--md3-surface-container), var(--md3-primary) 7%);
     box-shadow: inset 0 -2px 0 var(--md3-primary);
@@ -134,11 +129,13 @@
   height: 56px;
   margin-top: 4px;
   border: none;
-  border-radius: var(--md3-shape-full);   // resting: pill
+  border-radius: 28px;
+  
   background: var(--md3-primary);
   color: var(--md3-on-primary);
   cursor: pointer;
   box-shadow: var(--md3-elevation-1);
+  
   transition:
     background-color var(--md3-dur-short-3) var(--md3-easing-standard),
     transform var(--md3-dur-short-4) var(--md3-spring-bounce),
@@ -150,7 +147,6 @@
     box-shadow: var(--md3-elevation-2);
   }
 
-  // shape morph + spring squash on press: pill -> rounded square
   &:active:not(:disabled) {
     transform: scale(0.95);
     border-radius: var(--md3-shape-l);
