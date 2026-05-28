@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: blog-db
+    container_name: dev-db-blog
     restart: unless-stopped
     environment:
       POSTGRES_USER: blog
@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${DEV_DB_PORT:-15432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U blog"]
       interval: 5s
@@ -21,7 +21,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: blog-pgadmin
+    container_name: dev-pgadmin-blog
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@local.com
@@ -33,7 +33,7 @@ services:
       - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
       - ./pgadmin/pgpass:/pgadmin4/pgpass:ro
     ports:
-      - "5050:80"
+      - "${DEV_PGADMIN_PORT:-15050}:80"
     depends_on:
       db:
         condition: service_healthy
@@ -42,7 +42,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: blog-minio
+    container_name: dev-minio-blog
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -50,8 +50,8 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${DEV_MINIO_API_PORT:-19000}:9000"
+      - "${DEV_MINIO_CONSOLE_PORT:-19001}:9001"
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -65,7 +65,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: blog-backend
+    container_name: dev-backend-blog
     restart: unless-stopped
     environment:
       DEBUG: "true"
@@ -86,7 +86,7 @@ services:
       - ./backend:/app
       - ./avatars:/app/avatars
     ports:
-      - "8000:8000"
+      - "${DEV_BACKEND_PORT:-18000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -99,10 +99,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: blog-frontend
+    container_name: dev-frontend-blog
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "${DEV_FRONTEND_PORT:-13000}:80"
     depends_on:
       - backend
     networks:
