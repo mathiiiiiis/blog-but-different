@@ -1,3 +1,7 @@
+# NOTE
+
+I'm currently doing the Frontend from scratch.
+
 # A Blog But Different
 
 This is a blog, but not the usual kind. Instead of long posts, it works like a live chat. I am the only one who can post messages, while everyone else can react in real time.
