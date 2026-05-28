@@ -7,6 +7,7 @@ until pg_isready -h db -p 5432 -U "${DB_USER}"; do
 done
 
 echo "Running database migrations..."
-alembic upgrade head
+alembic -c /app/alembic.ini upgrade head
 
 exec "$@"
+
