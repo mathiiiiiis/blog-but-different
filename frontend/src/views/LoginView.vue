@@ -106,7 +106,7 @@ function goBack() {
 
       <template v-else>
         <div class="login-head">
-          <div class="login-badge">
+          <div class="login-badge shape-7-sided-cookie">
             <Icon name="user" :size="34" />
           </div>
           <h1 class="login-title">Admin login</h1>
