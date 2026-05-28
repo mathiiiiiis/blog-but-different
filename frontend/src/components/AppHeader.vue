@@ -23,7 +23,7 @@ const overflow = computed(() => Math.max(0, others.value.length - 3));
 <template>
   <header class="app-header">
     <div class="app-header__lead">
-      <span class="blog-title">Blog</span>
+      <span class="blog-title">Re:Blog (WIP)</span>
       <span class="presence">
         <span class="presence__dot"></span>
         {{ online }} online
