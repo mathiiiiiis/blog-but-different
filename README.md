@@ -1,3 +1,9 @@
+## ==== Note =====
+
+Check the WIP redesign [here](https://reblog.mathiiis.de)
+
+## ===============
+
 # A Blog But Different
 
 This is a blog, but not the usual kind. Instead of long posts, it works like a live chat. I am the only one who can post messages, while everyone else can react in real time.
@@ -8,7 +14,6 @@ The UI is inspired by the iMessage layout, with an optional switch to Material D
 <br>
 
 ## Preview
-
 
 | <span style="font-size:1.4em;font-weight:bold">iMessage Style</span> | <span style="font-size:1.4em;font-weight:bold">MD3 Style</span> |
 |----------------------------------------------------------------------|---------------------------------------------------------------------------|
@@ -59,3 +64,4 @@ The application will be available on port **80**.
 
 * `/clear` delete all messages and reactions
 * `/pin <text>` post a pinned message directly
+
