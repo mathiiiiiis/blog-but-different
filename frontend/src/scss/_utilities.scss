@@ -1,0 +1,50 @@
+// ==== utils ====
+// state layers, containment, elevation, shape, focus
+// consumes canonical --md3-* tokens
+
+// M3 state layer as a tonal background tint (color-mix, no overlay element)
+@mixin state-layer($base, $on: var(--md3-on-surface)) {
+  transition: background-color var(--md3-dur-short-3) var(--md3-easing-standard);
+  &:hover:not(:disabled)         { background-color: color-mix(in srgb, #{$base}, #{$on} 8%); }
+  &:focus-visible:not(:disabled) { background-color: color-mix(in srgb, #{$base}, #{$on} 10%); }
+  &:active:not(:disabled)        { background-color: color-mix(in srgb, #{$base}, #{$on} 12%); }
+}
+
+// containment: a shaded rounded group that carries structure
+@mixin contained($bg: var(--md3-surface-container), $radius: var(--md3-shape-xl)) {
+  background: $bg;
+  border-radius: $radius;
+}
+
+.m3-card {
+  @include contained();
+  padding: 16px;
+  box-shadow: var(--md3-elevation-1);
+}
+
+// ==== elevation classes ====
+@for $i from 1 through 5 {
+  .elevation-#{$i} { box-shadow: var(--md3-elevation-#{$i}); }
+}
+
+// ==== shape helpers ====
+.shape-full { border-radius: var(--md3-shape-full); }
+.shape-xxl  { border-radius: var(--md3-shape-xxl); }
+.shape-xl   { border-radius: var(--md3-shape-xl); }
+.shape-l    { border-radius: var(--md3-shape-l); }
+.shape-m    { border-radius: var(--md3-shape-m); }
+
+// ==== keyboard focus ring ====
+:focus-visible {
+  outline: 3px solid var(--md3-primary);
+  outline-offset: 2px;
+}
+
+// ==== bare button base ====
+.btn-reset {
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}

@@ -1,0 +1,41 @@
+// ==== typography ====
+// headings: Quicksand
+// body/labels: Roboto Flex
+
+@use 'sass:list';
+
+$type-roles:
+  display-large, display-small,
+  headline-medium, headline-small,
+  title-large, title-medium, title-small,
+  body-large, body-medium, body-small,
+  label-large, label-medium, label-small;
+
+//roles rendered in display face
+$heading-roles:
+  display-large, display-small,
+  headline-medium, headline-small,
+  title-large, title-medium, title-small;
+
+@mixin type($role, $emph: false) {
+  font-size: var(--type-#{$role}-size);
+  line-height: var(--type-#{$role}-line);
+  letter-spacing: var(--type-#{$role}-tracking);
+
+  @if list.index($heading-roles, $role) {
+    font-family: var(--font-display);
+    font-weight: if($emph, 700, else: 600);
+  } @else {
+    font-family: var(--font-family);
+    @if $emph {
+      font-weight: var(--type-#{$role}-weight-emph);
+    } @else {
+      font-weight: var(--type-#{$role}-weight);
+    }
+  }
+}
+
+@each $role in $type-roles {
+  .type-#{$role} { @include type($role); }
+  .type-#{$role}--emph { @include type($role, true); }
+}
