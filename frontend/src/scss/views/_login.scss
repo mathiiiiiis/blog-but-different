@@ -47,7 +47,11 @@
   height: 76px;
   margin-bottom: 18px;
   @include spin-mask(34s);
-  color: var(--md3-on-tertiary-container);
+  color: var(--md3-on-primary-container);
+
+  &::before {
+    background: var(--md3-primary-container);
+  }
 }
 
 .login-title {
