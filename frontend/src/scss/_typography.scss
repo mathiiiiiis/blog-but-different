@@ -24,7 +24,7 @@ $heading-roles:
 
   @if list.index($heading-roles, $role) {
     font-family: var(--font-display);
-    font-weight: if($emph, 700, else: 600);
+    font-weight: if($emph, 700, 600);
   } @else {
     font-family: var(--font-family);
     @if $emph {
