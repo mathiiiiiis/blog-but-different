@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
       <div class="composer__context-body">
         <span class="composer__context-title">
           <Icon :name="editing ? 'pencil' : 'reply'" :size="14" />
-          {{ editing ? "Editing message" : replyTo.username }}
+          {{ editing ? "Editing message" : replyTo.author_username }}
         </span>
         <span class="composer__context-text">{{
           editing ? editing.content : replyTo.content

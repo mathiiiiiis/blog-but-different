@@ -39,6 +39,22 @@
   }
 }
 
+// ==== day divider ====
+.msglist__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 14px 0 6px;
+
+  span {
+    @include type(label-medium);
+    padding: 4px 12px;
+    color: var(--md3-on-surface-variant);
+    background: var(--md3-surface-container);
+    border-radius: var(--md3-shape-full);
+  }
+}
+
 // ==== typing indicator ====
 .msglist__typing {
   display: flex;

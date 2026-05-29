@@ -1,21 +1,219 @@
 // ==== component: message bubble ====
 @use '../typography' as *;
+@use '../shapes' as *;
+@use '../utilities' as *;
 
 .bubble {
+  position: relative;
+  display: flex;
+  gap: 25px;
+  padding: 4px 12px;
+  margin-top: 12px;
+}
+
+//consecutive message from same author: drop avatar/head, tighten up
+.bubble--cont { margin-top: 2px; }
+
+.bubble__gutter {
+  flex-shrink: 0;
+  width: 36px;
+}
+
+.bubble__avatar {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  -webkit-mask: shape-url("circle") center / contain no-repeat;
+  mask: shape-url("circle") center / contain no-repeat;
+}
+
+.bubble__main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 10px;
+  gap: 4px;
+}
+
+// ==== head ====
+.bubble__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .bubble__author {
-  @include type(label-large);
-  color: var(--md3-primary);
+  @include type(label-large, true);
+  color: var(--md3-on-surface);
 }
 
-.bubble__body {
+.bubble__admin { color: var(--md3-primary); }
+
+.bubble__time {
+  @include type(label-small);
+  color: var(--md3-on-surface-variant);
+}
+
+.bubble__pin {
+  color: var(--md3-on-surface-variant);
+  margin-left: 2px;
+}
+
+// ==== reply preview ====
+.bubble__reply {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 4px 12px 4px 12px;
+  background: var(--md3-surface-container-high);
+  border-radius: var(--md3-shape-m);
+  color: var(--md3-on-surface-variant);
+  box-shadow: inset 3px 0 0 var(--md3-primary);
+}
+
+.bubble__reply-author {
+  @include type(label-medium, true);
+  color: var(--md3-primary);
+  flex-shrink: 0;
+}
+
+.bubble__reply-text {
+  @include type(body-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ==== content ====
+.bubble__content {
   @include type(body-large);
+  margin: 0;
   color: var(--md3-on-surface);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.bubble__edited {
+  @include type(label-small);
+  color: var(--md3-on-surface-variant);
+}
+
+// ==== attachments ====
+.bubble__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.bubble__media {
+  max-width: min(320px, 100%);
+  max-height: 320px;
+  border-radius: var(--md3-shape-l);
+  object-fit: cover;
+}
+
+.bubble__sticker {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.bubble__audio { width: min(320px, 100%); }
+
+.bubble__video {
+  max-width: min(360px, 100%);
+  max-height: 360px;
+  border-radius: var(--md3-shape-l);
+}
+
+.bubble__file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  text-decoration: none;
+  background: var(--md3-surface-container-high);
+  border-radius: var(--md3-shape-m);
+  color: var(--md3-on-surface);
+  @include type(label-large);
+}
+
+// ==== reactions ====
+.bubble__reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 2px 8px;
+  border: 1px solid var(--md3-outline-variant);
+  cursor: pointer;
+  background: var(--md3-surface-container);
+  border-radius: var(--md3-shape-full);
+  color: var(--md3-on-surface);
+  @include type(label-medium);
+  transition: background-color var(--md3-dur-short-2) var(--md3-easing-standard);
+}
+
+.reaction--me {
+  background: var(--md3-primary-container);
+  border-color: var(--md3-primary);
+  color: var(--md3-on-primary-container, var(--md3-on-surface));
+}
+
+.reaction__img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.reaction__emoji {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.reaction__count { font-variant-numeric: tabular-nums; }
+
+// ==== hover actions ====
+.bubble__actions {
+  position: absolute;
+  top: -8px;
+  right: 12px;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--md3-surface-container-high);
+  border-radius: var(--md3-shape-full);
+  box-shadow: var(--md3-elevation-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md3-dur-short-2) var(--md3-easing-standard);
+}
+
+.bubble:hover .bubble__actions,
+.bubble:focus-within .bubble__actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.icon-btn--sm {
+  width: 34px;
+  height: 34px;
+}
+
+//touch devices have no hover: keep actions reachable
+@media (hover: none) {
+  .bubble__actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }

@@ -14,12 +14,43 @@ const NEAR = 80; //px from bottom still counts as "at the bottom"
 const messages = computed(() => chat.messages || []);
 const typing = computed(() => chat.typingUsers || []);
 
+//group consecutive messages and insert day dividers
+function dayKey(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+function dayLabel(iso) {
+  const d = new Date(iso);
+  const today = new Date();
+  const yest = new Date();
+  yest.setDate(today.getDate() - 1);
+  if (dayKey(iso) === dayKey(today)) return "Today";
+  if (dayKey(iso) === dayKey(yest)) return "Yesterday";
+  return d.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" });
+}
+function withinMin(a, b, mins) {
+  return Math.abs(new Date(b) - new Date(a)) < mins * 60000;
+}
+
+const rows = computed(() =>
+  messages.value.map((m, i) => {
+    const prev = messages.value[i - 1];
+    const newDay = !prev || dayKey(prev.created_at) !== dayKey(m.created_at);
+    const continuation =
+      !!prev &&
+      !newDay &&
+      prev.author_id === m.author_id &&
+      withinMin(prev.created_at, m.created_at, 5);
+    return { message: m, divider: newDay ? dayLabel(m.created_at) : null, continuation };
+  }),
+);
+
 const typingLabel = computed(() => {
   const names = typing.value.map((u) => (typeof u === "string" ? u : u?.username)).filter(Boolean);
   if (!names.length) return "";
   if (names.length === 1) return `${names[0]} is typing…`;
   if (names.length === 2) return `${names[0]} and ${names[1]} are typing…`;
-  return `${names[0]} and ${names.length - 1} others are typing…`; //just in-case I might add mutlti-users
+  return `${names[0]} and ${names.length - 1} others are typing…`; //just in-case I might add multi-users
 });
 
 function isNearBottom() {
@@ -71,7 +102,12 @@ defineExpose({ scrollToBottom });
         <p>No messages yet.</p>
       </div>
 
-      <MessageBubble v-for="m in messages" :key="m.id" :message="m" />
+      <template v-for="row in rows" :key="row.message.id">
+        <div v-if="row.divider" class="msglist__divider">
+          <span>{{ row.divider }}</span>
+        </div>
+        <MessageBubble :message="row.message" :continuation="row.continuation" />
+      </template>
 
       <div v-if="typingLabel" class="msglist__typing">
         <span class="msglist__typing-dots"><i /><i /><i /></span>
