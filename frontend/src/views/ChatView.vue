@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useChatStore } from "../stores/chat";
 import AppHeader from "../components/AppHeader.vue";
+import MessageList from "../components/MessageList.vue";
 import Composer from "../components/Composer.vue";
 import Icon from "../components/Icon.vue";
 
@@ -25,12 +26,8 @@ provide("composer", {
   },
 });
 
-// ==== top scroll shadow ====
-const messagesEl = ref(null);
+//header gains shadow once list is scrolled > emitted by MessageList
 const isScrolled = ref(false);
-function onScroll() {
-  isScrolled.value = (messagesEl.value?.scrollTop ?? 0) > 0;
-}
 
 function goLogin() {
   router.push("/login");
@@ -56,9 +53,7 @@ onUnmounted(() => {
   <div class="chat" :class="{ 'is-scrolled': isScrolled }">
     <AppHeader @login="goLogin" @open-admin="openAdmin" @toggle-avatar="toggleAvatar" />
 
-    <div ref="messagesEl" class="chat__messages" @scroll="onScroll">
-      <!-- message list slice -->
-    </div>
+    <MessageList @scrolled="isScrolled = $event" />
 
     <Composer
       v-if="auth.canPost"

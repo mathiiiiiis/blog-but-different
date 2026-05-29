@@ -1,0 +1,92 @@
+// ==== component: message list ====
+@use '../typography' as *;
+
+.msglist {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.msglist__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 12px 12px;
+}
+
+//center empty state when there are no messages
+.msglist__scroll:has(.msglist__empty) {
+  justify-content: center;
+  align-items: center;
+}
+
+.msglist__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--md3-on-surface-variant);
+  text-align: center;
+
+  p {
+    @include type(body-medium);
+    margin: 0;
+  }
+}
+
+// ==== typing indicator ====
+.msglist__typing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 2px;
+  @include type(label-medium);
+  color: var(--md3-on-surface-variant);
+}
+
+.msglist__typing-dots {
+  display: inline-flex;
+  gap: 3px;
+
+  i {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--md3-shape-full);
+    background: var(--md3-on-surface-variant);
+    animation: typingDot 1.2s var(--md3-easing-standard) infinite;
+  }
+
+  i:nth-child(2) { animation-delay: 0.15s; }
+  i:nth-child(3) { animation-delay: 0.3s; }
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+// ==== jump to latest ====
+.msglist__jump {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--md3-shape-full);
+  background: var(--md3-surface-container-high);
+  color: var(--md3-on-surface);
+  box-shadow: var(--md3-elevation-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msglist__typing-dots i { animation: none; }
+}

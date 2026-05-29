@@ -1,0 +1,21 @@
+// ==== component: message bubble ====
+@use '../typography' as *;
+
+.bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+}
+
+.bubble__author {
+  @include type(label-large);
+  color: var(--md3-primary);
+}
+
+.bubble__body {
+  @include type(body-large);
+  color: var(--md3-on-surface);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
