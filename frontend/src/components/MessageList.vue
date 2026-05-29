@@ -9,12 +9,13 @@ const chat = useChatStore();
 
 const scrollEl = ref(null);
 const atBottom = ref(true);
-const NEAR = 80; //px from bottom still counts as "at the bottom"
+const loadingOlder = ref(false);
+const NEAR = 80; //px from the bottom still counts as "at the bottom"
 
 const messages = computed(() => chat.messages || []);
 const typing = computed(() => chat.typingUsers || []);
 
-//group consecutive messages and insert day dividers
+// group consecutive messages and insert day dividers
 function dayKey(iso) {
   const d = new Date(iso);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -68,6 +69,28 @@ function onScroll() {
   if (!el) return;
   atBottom.value = isNearBottom();
   emit("scrolled", el.scrollTop > 0);
+
+  //pull in older history as top comes into view
+  if (el.scrollTop < 120 && chat.hasMore && !loadingOlder.value && messages.value.length) {
+    loadOlder();
+  }
+}
+
+async function loadOlder() {
+  const el = scrollEl.value;
+  const oldest = messages.value[0];
+  if (!el || !oldest) return;
+  loadingOlder.value = true;
+  const prevHeight = el.scrollHeight;
+  const prevTop = el.scrollTop;
+  try {
+    await chat.fetchMessages(oldest.id, { silent: true });
+    await nextTick();
+    //anchor viewport so prepended messages dont shove view down
+    el.scrollTop = el.scrollHeight - prevHeight + prevTop;
+  } finally {
+    loadingOlder.value = false;
+  }
 }
 
 //stay pinned to latest message unless user scrolled up
@@ -100,6 +123,10 @@ defineExpose({ scrollToBottom });
       <div v-if="!messages.length" class="msglist__empty">
         <Icon name="chat" :size="40" />
         <p>No messages yet.</p>
+      </div>
+
+      <div v-if="loadingOlder" class="msglist__loading">
+        <span class="msglist__typing-dots"><i /><i /><i /></span>
       </div>
 
       <template v-for="row in rows" :key="row.message.id">

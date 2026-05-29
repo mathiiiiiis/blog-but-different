@@ -40,7 +40,13 @@
   }
 }
 
-// ==== day divider ====
+// ==== load-older + day divider ====
+.msglist__loading {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 6px;
+}
+
 .msglist__divider {
   display: flex;
   align-items: center;
