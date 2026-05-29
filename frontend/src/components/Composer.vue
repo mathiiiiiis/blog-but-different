@@ -255,6 +255,7 @@ onBeforeUnmount(() => {
           v-if="hasContent"
           class="composer__send"
           :aria-label="isEditing ? 'Save' : 'Send'"
+          @pointerdown.prevent
           @click="send"
         >
           <Icon name="arrow-up" :size="24" />
