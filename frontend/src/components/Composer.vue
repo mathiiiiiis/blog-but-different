@@ -16,6 +16,7 @@ const pendingFiles = ref([]); //{ id, file, isImage, url }
 const menuOpen = ref(false);
 const fieldEl = ref(null);
 const fileInput = ref(null);
+const fieldScrolled = ref(false);
 
 const isEditing = computed(() => !!props.editing);
 const hasContent = computed(() => text.value.trim().length > 0 || pendingFiles.value.length > 0);
@@ -47,7 +48,10 @@ watch(
     if (m) {
       text.value = m.content || "";
       focusField();
-      nextTick(grow);
+      nextTick(() => {
+        grow();
+        checkFieldScroll();
+      });
     }
   },
   { immediate: true },
@@ -73,9 +77,14 @@ function grow() {
   el.style.height = "auto";
   el.style.height = Math.min(el.scrollHeight, 140) + "px";
 }
+//shadow at top of input once it hits max height and scrolls
+function checkFieldScroll() {
+  fieldScrolled.value = (fieldEl.value?.scrollTop ?? 0) > 0;
+}
 let lastTyping = 0;
 function onInput() {
   grow();
+  checkFieldScroll();
   const now = Date.now();
   if (now - lastTyping > 2000) {
     lastTyping = now;
@@ -138,7 +147,10 @@ async function send() {
   text.value = "";
   pendingFiles.value.forEach((f) => f.url && URL.revokeObjectURL(f.url));
   pendingFiles.value = [];
-  nextTick(grow);
+  nextTick(() => {
+    grow();
+    checkFieldScroll();
+  });
 }
 
 //enter sends on desktop; shift+enter newline; touch always newlines (use button)
@@ -162,7 +174,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="composer" :class="{ 'composer--context': replyTo || editing }">
+  <div
+    class="composer"
+    :class="{ 'composer--context': replyTo || editing, 'composer--has-send': hasContent }"
+  >
     <!-- ==== reply / edit strip ==== -->
     <div v-if="replyTo || editing" class="composer__context">
       <span class="composer__context-bar" />
@@ -221,7 +236,7 @@ onBeforeUnmount(() => {
         </Transition>
       </div>
 
-      <div class="composer__field">
+      <div class="composer__field" :class="{ 'is-scrolled': fieldScrolled }">
         <textarea
           ref="fieldEl"
           v-model="text"
@@ -231,10 +246,11 @@ onBeforeUnmount(() => {
           :placeholder="editing ? 'Edit message…' : 'Write a new message…'"
           @input="onInput"
           @keydown="onKeydown"
+          @scroll="checkFieldScroll"
         />
       </div>
 
-      <Transition name="scale">
+      <Transition name="send">
         <button
           v-if="hasContent"
           class="composer__send"

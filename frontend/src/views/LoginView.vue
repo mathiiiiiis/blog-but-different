@@ -63,7 +63,7 @@ function goBack() {
     <div class="login-card">
       <template v-if="mode === 'change'">
         <div class="login-head">
-          <div class="login-badge">
+          <div class="login-badge shape-soft-burst">
             <Icon name="lock" :size="34" />
           </div>
           <h1 class="login-title">Change password</h1>

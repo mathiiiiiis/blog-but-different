@@ -25,6 +25,13 @@ provide("composer", {
   },
 });
 
+// ==== top scroll shadow ====
+const messagesEl = ref(null);
+const isScrolled = ref(false);
+function onScroll() {
+  isScrolled.value = (messagesEl.value?.scrollTop ?? 0) > 0;
+}
+
 function goLogin() {
   router.push("/login");
 }
@@ -46,10 +53,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="chat">
+  <div class="chat" :class="{ 'is-scrolled': isScrolled }">
     <AppHeader @login="goLogin" @open-admin="openAdmin" @toggle-avatar="toggleAvatar" />
 
-    <div class="chat__messages">
+    <div ref="messagesEl" class="chat__messages" @scroll="onScroll">
       <!-- message list slice -->
     </div>
 
