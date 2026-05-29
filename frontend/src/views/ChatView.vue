@@ -29,6 +29,11 @@ provide("composer", {
 //header gains shadow once list is scrolled > emitted by MessageList
 const isScrolled = ref(false);
 
+//composer floats over messages; measure it so list can scroll clear
+const dockEl = ref(null);
+const dockH = ref(64);
+let ro = null;
+
 function goLogin() {
   router.push("/login");
 }
@@ -38,6 +43,12 @@ function openGif() {} //gif picker slice
 function openEmoji() {} //emoji picker slice
 
 onMounted(async () => {
+  if (dockEl.value && "ResizeObserver" in window) {
+    ro = new ResizeObserver(() => {
+      dockH.value = dockEl.value?.offsetHeight ?? 64;
+    });
+    ro.observe(dockEl.value);
+  }
   await chat.fetchAvatars();
   await chat.fetchCustomEmojis();
   await chat.fetchMessages();
@@ -45,6 +56,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  ro?.disconnect();
   chat.disconnect();
 });
 </script>
@@ -53,20 +65,24 @@ onUnmounted(() => {
   <div class="chat" :class="{ 'is-scrolled': isScrolled }">
     <AppHeader @login="goLogin" @open-admin="openAdmin" @toggle-avatar="toggleAvatar" />
 
-    <MessageList @scrolled="isScrolled = $event" />
+    <div class="chat__body" :style="{ '--dock-h': dockH + 'px' }">
+      <MessageList @scrolled="isScrolled = $event" />
 
-    <Composer
-      v-if="auth.canPost"
-      :reply-to="replyTo"
-      :editing="editing"
-      @cancel-reply="replyTo = null"
-      @cancel-edit="editing = null"
-      @open-gif="openGif"
-      @open-emoji="openEmoji"
-    />
-    <div v-else class="composer-guest">
-      <Icon name="info" :size="16" />
-      viewing as {{ auth.user?.username || "guest" }}
+      <div ref="dockEl" class="chat__dock">
+        <Composer
+          v-if="auth.canPost"
+          :reply-to="replyTo"
+          :editing="editing"
+          @cancel-reply="replyTo = null"
+          @cancel-edit="editing = null"
+          @open-gif="openGif"
+          @open-emoji="openEmoji"
+        />
+        <div v-else class="composer-guest">
+          <Icon name="info" :size="16" />
+          viewing as {{ auth.user?.username || "guest" }}
+        </div>
+      </div>
     </div>
   </div>
 </template>

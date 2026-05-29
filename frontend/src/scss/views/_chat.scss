@@ -7,6 +7,25 @@
   background: var(--md3-surface);
 }
 
+.chat__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat__body > .msglist {
+  position: absolute;
+  inset: 0;
+}
+
+.chat__dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
 // ==== top scroll shadow ====
 .chat .app-header {
   transition: box-shadow var(--md3-dur-short-3) var(--md3-easing-standard);
