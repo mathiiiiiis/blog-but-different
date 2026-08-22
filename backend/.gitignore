@@ -1,0 +1,11 @@
+# build artefacts
+/server
+*.exe
+
+# tests are kept out of the repo
+*_test.go
+internal/store/testing.go
+
+# local env
+.env
+firebase-credentials.json
