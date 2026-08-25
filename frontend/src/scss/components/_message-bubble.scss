@@ -1,27 +1,29 @@
 // ==== component: message bubble ====
-@use '../typography' as *;
-@use '../shapes' as *;
-@use '../utilities' as *;
+@use "../typography" as *;
+@use "../shapes" as *;
+@use "../utilities" as *;
 
 .bubble {
   position: relative;
   display: flex;
-  gap: 25px;
-  padding: 4px 12px;
+  gap: 12px;
+  padding: 2px 12px;
   margin-top: 12px;
 }
 
 //consecutive message from same author: drop avatar/head, tighten up
-.bubble--cont { margin-top: 2px; }
+.bubble--cont {
+  margin-top: 2px;
+}
 
 .bubble__gutter {
   flex-shrink: 0;
-  width: 36px;
+  width: 40px;
 }
 
 .bubble__avatar {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   object-fit: cover;
   -webkit-mask: shape-url("circle") center / contain no-repeat;
   mask: shape-url("circle") center / contain no-repeat;
@@ -33,6 +35,16 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+// ==== body ====
+.bubble__body {
+  align-self: flex-start;
+  max-width: min(640px, 100%);
+  padding: 12px 18px;
+  background: var(--md3-surface-container-high);
+  border-radius: var(--bubble-radius);
+  color: var(--md3-on-surface);
 }
 
 // ==== head ====
@@ -47,7 +59,9 @@
   color: var(--md3-on-surface);
 }
 
-.bubble__admin { color: var(--md3-primary); }
+.bubble__admin {
+  color: var(--md3-primary);
+}
 
 .bubble__time {
   @include type(label-small);
@@ -66,9 +80,10 @@
   gap: 6px;
   align-self: flex-start;
   max-width: 100%;
-  padding: 4px 12px 4px 12px;
-  background: var(--md3-surface-container-high);
-  border-radius: var(--md3-shape-m);
+  margin-bottom: 6px;
+  padding: 4px 12px;
+  background: var(--md3-surface-container-highest);
+  border-radius: var(--bubble-radius-nested);
   color: var(--md3-on-surface-variant);
   box-shadow: inset 3px 0 0 var(--md3-primary);
 }
@@ -121,7 +136,9 @@
   object-fit: contain;
 }
 
-.bubble__audio { width: min(320px, 100%); }
+.bubble__audio {
+  width: min(320px, 100%);
+}
 
 .bubble__video {
   max-width: min(360px, 100%);
@@ -135,8 +152,8 @@
   gap: 8px;
   padding: 10px 14px;
   text-decoration: none;
-  background: var(--md3-surface-container-high);
-  border-radius: var(--md3-shape-m);
+  background: var(--md3-surface-container-highest);
+  border-radius: var(--bubble-radius-nested);
   color: var(--md3-on-surface);
   @include type(label-large);
 }
@@ -181,7 +198,9 @@
   line-height: 1;
 }
 
-.reaction__count { font-variant-numeric: tabular-nums; }
+.reaction__count {
+  font-variant-numeric: tabular-nums;
+}
 
 // ==== hover actions ====
 .bubble__actions {

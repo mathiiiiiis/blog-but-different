@@ -28,7 +28,10 @@ const reply = computed(() => m.value.reply_to || null);
 
 function fmtTime(iso) {
   if (!iso) return "";
-  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 function reactedByMe(r) {
   return !!auth.user && (r.users || []).includes(auth.user.username);
@@ -55,7 +58,10 @@ function toggleReaction(r) {
 </script>
 
 <template>
-  <div class="bubble" :class="{ 'bubble--cont': continuation, 'bubble--pinned': m.is_pinned }">
+  <div
+    class="bubble"
+    :class="{ 'bubble--cont': continuation, 'bubble--pinned': m.is_pinned }"
+  >
     <div class="bubble__gutter">
       <img
         v-if="!continuation"
@@ -69,20 +75,30 @@ function toggleReaction(r) {
     <div class="bubble__main">
       <div v-if="!continuation" class="bubble__head">
         <span class="bubble__author">{{ m.author_username }}</span>
-        <Icon v-if="m.is_admin" name="shield" :size="13" class="bubble__admin" />
+        <Icon
+          v-if="m.is_admin"
+          name="shield"
+          :size="13"
+          class="bubble__admin"
+        />
         <span class="bubble__time">{{ time }}</span>
         <Icon v-if="m.is_pinned" name="pin" :size="13" class="bubble__pin" />
       </div>
 
-      <div v-if="reply" class="bubble__reply">
-        <Icon name="reply" :size="14" />
-        <span class="bubble__reply-author">{{ reply.author_username }}</span>
-        <span class="bubble__reply-text">{{ reply.content || "attachment" }}</span>
-      </div>
+      <div class="bubble__body">
+        <div v-if="reply" class="bubble__reply">
+          <Icon name="reply" :size="14" />
+          <span class="bubble__reply-author">{{ reply.author_username }}</span>
+          <span class="bubble__reply-text">{{
+            reply.content || "attachment"
+          }}</span>
+        </div>
 
-      <p v-if="m.content" class="bubble__content">
-        {{ m.content }}<span v-if="edited" class="bubble__edited"> (edited)</span>
-      </p>
+        <p v-if="m.content" class="bubble__content">
+          {{ m.content
+          }}<span v-if="edited" class="bubble__edited"> (edited)</span>
+        </p>
+      </div>
 
       <div v-if="attachments.length" class="bubble__attachments">
         <template v-for="(a, i) in attachments" :key="i">
@@ -100,9 +116,25 @@ function toggleReaction(r) {
             :alt="a.name"
             loading="lazy"
           />
-          <audio v-else-if="a.type === 'audio'" class="bubble__audio" :src="a.url" controls />
-          <video v-else-if="a.type === 'video'" class="bubble__video" :src="a.url" controls />
-          <a v-else class="bubble__file" :href="a.url" target="_blank" rel="noopener">
+          <audio
+            v-else-if="a.type === 'audio'"
+            class="bubble__audio"
+            :src="a.url"
+            controls
+          />
+          <video
+            v-else-if="a.type === 'video'"
+            class="bubble__video"
+            :src="a.url"
+            controls
+          />
+          <a
+            v-else
+            class="bubble__file"
+            :href="a.url"
+            target="_blank"
+            rel="noopener"
+          >
             <Icon name="file" :size="20" />
             <span class="bubble__file-name">{{ a.name }}</span>
           </a>
@@ -135,16 +167,28 @@ function toggleReaction(r) {
         <Icon name="smile" :size="18" />
       </button>
       <template v-if="canPost">
-        <button class="icon-btn icon-btn--sm" aria-label="Reply" @click="startReply">
+        <button
+          class="icon-btn icon-btn--sm"
+          aria-label="Reply"
+          @click="startReply"
+        >
           <Icon name="reply" :size="18" />
         </button>
-        <button class="icon-btn icon-btn--sm" aria-label="Edit" @click="startEdit">
+        <button
+          class="icon-btn icon-btn--sm"
+          aria-label="Edit"
+          @click="startEdit"
+        >
           <Icon name="pencil" :size="18" />
         </button>
         <button class="icon-btn icon-btn--sm" aria-label="Pin" @click="pin">
           <Icon name="pin" :size="18" />
         </button>
-        <button class="icon-btn icon-btn--sm" aria-label="Delete" @click="remove">
+        <button
+          class="icon-btn icon-btn--sm"
+          aria-label="Delete"
+          @click="remove"
+        >
           <Icon name="trash" :size="18" />
         </button>
       </template>
