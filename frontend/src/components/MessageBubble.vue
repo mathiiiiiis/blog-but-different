@@ -85,7 +85,7 @@ function toggleReaction(r) {
         <Icon v-if="m.is_pinned" name="pin" :size="13" class="bubble__pin" />
       </div>
 
-      <div class="bubble__body">
+      <div v-if="m.content || reply" class="bubble__body">
         <div v-if="reply" class="bubble__reply">
           <Icon name="reply" :size="14" />
           <span class="bubble__reply-author">{{ reply.author_username }}</span>
