@@ -1,27 +1,25 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+
+const remote = process.env.VITE_API_TARGET;
+const api = remote || "http://localhost:8000";
+const ws = remote ? remote.replace(/^http/, "ws") : "ws://localhost:8000";
+const blob = remote || "http://localhost:9000";
 
 export default defineConfig({
   plugins: [vue()],
   server: {
-    port: 3000,
+    port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true
+      "/api": { target: api, changeOrigin: true },
+      "/ws": {
+        target: ws,
+        ws: true,
+        changeOrigin: true,
+        headers: remote ? { Origin: remote } : undefined,
       },
-      '/ws': {
-        target: 'ws://localhost:8000',
-        ws: true
-      },
-      '/avatars': {
-        target: 'http://localhost:8000',
-        changeOrigin: true
-      },
-      '/blog': {
-        target: 'http://localhost:9000',
-        changeOrigin: true
-      }
-    }
-  }
-})
+      "/avatars": { target: api, changeOrigin: true },
+      "/blog": { target: blob, changeOrigin: true },
+    },
+  },
+});
