@@ -1,17 +1,26 @@
-FROM python:3.12-slim
-WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  gcc \
-  libpq-dev \
-  curl \
-  postgresql-client \
-  && rm -rf /var/lib/apt/lists/*
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+FROM golang:1.24-alpine AS build
+
+WORKDIR /src
+
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . .
-RUN chmod +x ./entrypoint.sh
+
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -trimpath \
+    -ldflags="-s -w" \
+    -o /out/server ./cmd/server
+
+FROM gcr.io/distroless/static-debian12:nonroot
+
+WORKDIR /app
+
+COPY --from=build /out/server /app/server
+COPY avatars /app/avatars
+
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/api/health || exit 1
-ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+USER nonroot:nonroot
+
+ENTRYPOINT ["/app/server"]

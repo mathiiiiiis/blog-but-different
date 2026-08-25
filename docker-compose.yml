@@ -17,7 +17,7 @@ services:
       retries: 5
     networks:
       - blog-network
-  
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: blog-pgadmin
@@ -61,14 +61,14 @@ services:
   # === Backend ===
   backend:
     container_name: blog-backend
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     restart: always
     environment:
       DEBUG: "false"
-      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-      DATABASE_URL_SYNC: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      # The old postgresql+asyncpg:// form is still accepted and normalised.
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
@@ -77,12 +77,13 @@ services:
       MINIO_PUBLIC_URL: ""
       SECRET_KEY: ${SECRET_KEY}
       CORS_ORIGINS: ${CORS_ORIGINS}
+      TRUST_PROXY: "true"
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD}
       KLIPY_API_KEY: ${KLIPY_API_KEY}
       FCM_CREDENTIALS_PATH: /app/firebase-credentials.json
     volumes: # change this to the path on your server
-     - /opt/liveblog/firebase-credentials.json:/app/firebase-credentials.json:ro
+      - /opt/liveblog/firebase-credentials.json:/app/firebase-credentials.json:ro
     depends_on:
       db:
         condition: service_healthy
