@@ -4,21 +4,22 @@
 // ============================================
 
 //tokens
-@use 'variables' as *;
+@use "variables" as *;
+@use "expressive" as *;
 
 //system
-@use 'reset' as *;
-@use 'typography' as *;
-@use 'motion' as *;
-@use 'utilities' as *;
-@use 'shapes' as *;
+@use "reset" as *;
+@use "typography" as *;
+@use "motion" as *;
+@use "utilities" as *;
+@use "shapes" as *;
 
 //views
-@use 'views/login' as *;
-@use 'views/chat' as *;
+@use "views/login" as *;
+@use "views/chat" as *;
 
 //components
-@use 'components/header' as *;
-@use 'components/composer' as *;
-@use 'components/message-list' as *;
-@use 'components/message-bubble' as *;
+@use "components/header" as *;
+@use "components/composer" as *;
+@use "components/message-list" as *;
+@use "components/message-bubble" as *;

@@ -1,0 +1,135 @@
+:root {
+  // ==== motion ====
+  --md3-spring-fast-spatial: linear(
+    0,
+    0.0752,
+    0.2487,
+    0.4573,
+    0.658,
+    0.8261,
+    0.9513,
+    1.0334,
+    1.0781,
+    1.0941,
+    1.0908,
+    1.0761,
+    1.0568,
+    1.0373,
+    1.0204,
+    1.0074,
+    0.9985,
+    0.9934,
+    0.9913,
+    0.9912,
+    0.9924,
+    0.9941,
+    0.996,
+    0.9977,
+    1
+  );
+  --md3-spring-fast-spatial-dur: 360ms;
+
+  --md3-spring-default-spatial: linear(
+    0,
+    0.0516,
+    0.1703,
+    0.3161,
+    0.4634,
+    0.5977,
+    0.712,
+    0.8041,
+    0.8749,
+    0.927,
+    0.9634,
+    0.9876,
+    1.0025,
+    1.0107,
+    1.0144,
+    1.0151,
+    1.0141,
+    1.0122,
+    1.01,
+    1.0078,
+    1.0058,
+    1.0041,
+    1.0028,
+    1.0017,
+    1
+  );
+  --md3-spring-default-spatial-dur: 435ms;
+
+  --md3-spring-slow-spatial: var(--md3-spring-default-spatial);
+  --md3-spring-slow-spatial-dur: 600ms;
+
+  --md3-spring-fast-effects: linear(
+    0,
+    0.1144,
+    0.3208,
+    0.5165,
+    0.6711,
+    0.7831,
+    0.8601,
+    0.9113,
+    0.9445,
+    0.9656,
+    0.9789,
+    0.9871,
+    0.9922,
+    0.9953,
+    0.9972,
+    0.9983,
+    1
+  );
+  --md3-spring-fast-effects-dur: 150ms;
+
+  --md3-spring-default-effects: var(--md3-spring-fast-effects);
+  --md3-spring-default-effects-dur: 230ms;
+
+  --md3-spring-slow-effects: var(--md3-spring-fast-effects);
+  --md3-spring-slow-effects-dur: 325ms;
+
+  --md3-easing-emphasized: linear(
+    0,
+    0.0169,
+    0.0751,
+    0.2058,
+    0.5338,
+    0.7253,
+    0.8084,
+    0.8581,
+    0.8921,
+    0.917,
+    0.936,
+    0.9506,
+    0.9623,
+    0.9716,
+    0.979,
+    0.9849,
+    0.9896,
+    0.9931,
+    0.9958,
+    0.9978,
+    0.999,
+    0.9998,
+    1
+  );
+  --md3-easing-emphasized-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md3-easing-emphasized-accel: cubic-bezier(0.3, 0, 0.8, 0.15);
+
+  // ==== bubble shape ====
+  --bubble-radius: var(--md3-shape-xl);
+  --bubble-radius-joined: var(--md3-shape-s);
+  --bubble-radius-pressed: var(--md3-shape-l);
+  --bubble-radius-nested: var(--md3-shape-m);
+  --bubble-radius-chip: var(--md3-shape-full);
+
+  // ==== bubble motion pairs ====
+  --bubble-shape-easing: var(--md3-spring-fast-spatial);
+  --bubble-shape-dur: var(--md3-spring-fast-spatial-dur);
+
+  --bubble-enter-easing: var(--md3-spring-default-spatial);
+  --bubble-enter-dur: var(--md3-spring-default-spatial-dur);
+
+  --bubble-tint-easing: var(--md3-spring-default-effects);
+  --bubble-tint-dur: var(--md3-spring-default-effects-dur);
+}
