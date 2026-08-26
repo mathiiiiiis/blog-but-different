@@ -85,11 +85,7 @@ function toggleReaction(r) {
         <Icon v-if="m.is_pinned" name="pin" :size="13" class="bubble__pin" />
       </div>
 
-      <div
-        v-if="m.content || reply"
-        class="bubble__body"
-        :class="{ 'bubble__body--quote': reply }"
-      >
+      <div class="bubble__body" :class="{ 'bubble__body--quote': reply }">
         <div v-if="reply" class="bubble__reply">
           <Icon name="reply" :size="14" />
           <span class="bubble__reply-author">{{ reply.author_username }}</span>
@@ -102,47 +98,47 @@ function toggleReaction(r) {
           {{ m.content
           }}<span v-if="edited" class="bubble__edited"> (edited)</span>
         </p>
-      </div>
 
-      <div v-if="attachments.length" class="bubble__attachments">
-        <template v-for="(a, i) in attachments" :key="i">
-          <img
-            v-if="a.type === 'image' || a.type === 'gif'"
-            class="bubble__media"
-            :src="a.url"
-            :alt="a.name"
-            loading="lazy"
-          />
-          <img
-            v-else-if="a.type === 'sticker'"
-            class="bubble__sticker"
-            :src="a.url"
-            :alt="a.name"
-            loading="lazy"
-          />
-          <audio
-            v-else-if="a.type === 'audio'"
-            class="bubble__audio"
-            :src="a.url"
-            controls
-          />
-          <video
-            v-else-if="a.type === 'video'"
-            class="bubble__video"
-            :src="a.url"
-            controls
-          />
-          <a
-            v-else
-            class="bubble__file"
-            :href="a.url"
-            target="_blank"
-            rel="noopener"
-          >
-            <Icon name="file" :size="20" />
-            <span class="bubble__file-name">{{ a.name }}</span>
-          </a>
-        </template>
+        <div v-if="attachments.length" class="bubble__attachments">
+          <template v-for="(a, i) in attachments" :key="i">
+            <img
+              v-if="a.type === 'image' || a.type === 'gif'"
+              class="bubble__media"
+              :src="a.url"
+              :alt="a.name"
+              loading="lazy"
+            />
+            <img
+              v-else-if="a.type === 'sticker'"
+              class="bubble__sticker"
+              :src="a.url"
+              :alt="a.name"
+              loading="lazy"
+            />
+            <audio
+              v-else-if="a.type === 'audio'"
+              class="bubble__audio"
+              :src="a.url"
+              controls
+            />
+            <video
+              v-else-if="a.type === 'video'"
+              class="bubble__video"
+              :src="a.url"
+              controls
+            />
+            <a
+              v-else
+              class="bubble__file"
+              :href="a.url"
+              target="_blank"
+              rel="noopener"
+            >
+              <Icon name="file" :size="20" />
+              <span class="bubble__file-name">{{ a.name }}</span>
+            </a>
+          </template>
+        </div>
       </div>
 
       <div v-if="reactions.length" class="bubble__reactions">

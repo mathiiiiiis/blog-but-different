@@ -39,31 +39,55 @@
 
 // ==== body ====
 .bubble__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   align-self: flex-start;
+  gap: 4px;
   max-width: min(640px, 100%);
+}
+
+.bubble__content {
+  @include type(body-large);
+  margin: 0;
   padding: 12px 18px;
+  overflow-wrap: anywhere;
   background: var(--md3-surface-container-high);
   border-radius: var(--bubble-radius);
   color: var(--md3-on-surface);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 $quote-inset: 6px;
+$quote-radius: calc(var(--bubble-radius) - #{$quote-inset});
 
 .bubble__body--quote {
-  padding: $quote-inset $quote-inset 0;
+  gap: $quote-inset;
+  padding: $quote-inset;
   background: var(--md3-surface-container);
+  border-radius: var(--bubble-radius);
 
-  .bubble__content {
-    margin: 0 (-$quote-inset);
-    padding: 12px 18px;
-    background: var(--md3-surface-container-high);
-    border-radius: var(--bubble-radius-joined) var(--bubble-radius-joined)
-      var(--bubble-radius) var(--bubble-radius);
+  .bubble__reply,
+  .bubble__content,
+  .bubble__media,
+  .bubble__video,
+  .bubble__audio {
+    margin: 0;
+    border-radius: $quote-radius;
   }
 
-  .bubble__reply:last-child {
-    margin-bottom: $quote-inset;
-    border-radius: calc(var(--bubble-radius) - #{$quote-inset});
+  .bubble__attachments {
+    margin: 0;
+  }
+
+  .bubble__content {
+    align-self: stretch;
+  }
+
+  .bubble__media,
+  .bubble__video {
+    max-width: min(320px, 70vw);
   }
 }
 
@@ -96,13 +120,12 @@ $quote-inset: 6px;
 // ==== reply preview ====
 .bubble__reply {
   display: block;
-  width: 100%;
-  margin-bottom: $quote-inset;
+  align-self: flex-start;
+  min-width: 220px;
+  max-width: 100%;
   padding: 8px 14px;
   background: var(--md3-surface-container-lowest);
-  border-radius: calc(var(--bubble-radius) - #{$quote-inset})
-    calc(var(--bubble-radius) - #{$quote-inset}) var(--bubble-radius-joined)
-    var(--bubble-radius-joined);
+  border-radius: $quote-radius;
   color: var(--md3-on-surface-variant);
 }
 
@@ -115,20 +138,13 @@ $quote-inset: 6px;
 .bubble__reply-text {
   @include type(body-medium);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 // ==== content ====
-.bubble__content {
-  @include type(body-large);
-  margin: 0;
-  color: var(--md3-on-surface);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
 .bubble__edited {
   @include type(label-small);
   color: var(--md3-on-surface-variant);
@@ -246,12 +262,4 @@ $quote-inset: 6px;
 .icon-btn--sm {
   width: 34px;
   height: 34px;
-}
-
-//touch devices have no hover: keep actions reachable
-@media (hover: none) {
-  .bubble__actions {
-    opacity: 1;
-    pointer-events: auto;
-  }
 }
