@@ -1,5 +1,12 @@
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
 import { useChatStore } from "../stores/chat";
 import Icon from "./Icon.vue";
 
@@ -7,7 +14,12 @@ const props = defineProps({
   replyTo: { type: Object, default: null },
   editing: { type: Object, default: null },
 });
-const emit = defineEmits(["cancel-reply", "cancel-edit", "open-gif", "open-emoji"]);
+const emit = defineEmits([
+  "cancel-reply",
+  "cancel-edit",
+  "open-gif",
+  "open-emoji",
+]);
 
 const chat = useChatStore();
 
@@ -19,7 +31,9 @@ const fileInput = ref(null);
 const fieldScrolled = ref(false);
 
 const isEditing = computed(() => !!props.editing);
-const hasContent = computed(() => text.value.trim().length > 0 || pendingFiles.value.length > 0);
+const hasContent = computed(
+  () => text.value.trim().length > 0 || pendingFiles.value.length > 0,
+);
 
 // ==== responsive ====
 const vw = ref(window.innerWidth);
@@ -37,7 +51,8 @@ const menuItems = computed(() => {
     { key: "file", icon: "file", label: "File" },
     { key: "gif", icon: "gif", label: "GIF" },
   ];
-  if (!isTouch.value && vw.value < 640) items.push({ key: "emoji", icon: "smile", label: "Emoji" });
+  if (!isTouch.value && vw.value < 640)
+    items.push({ key: "emoji", icon: "smile", label: "Emoji" });
   return items;
 });
 
@@ -97,7 +112,8 @@ function toggleMenu() {
   menuOpen.value = !menuOpen.value;
 }
 function onDocClick(e) {
-  if (menuOpen.value && !e.target.closest(".composer__actions")) menuOpen.value = false;
+  if (menuOpen.value && !e.target.closest(".composer__actions"))
+    menuOpen.value = false;
 }
 function pick(item) {
   menuOpen.value = false;
@@ -140,7 +156,13 @@ async function send() {
     emit("cancel-edit");
   } else {
     const files = pendingFiles.value.map((f) => f.file);
-    await chat.sendMessage(content, files, props.replyTo?.id ?? null, null, null);
+    await chat.sendMessage(
+      content,
+      files,
+      props.replyTo?.id ?? null,
+      null,
+      null,
+    );
     if (props.replyTo) emit("cancel-reply");
   }
 
@@ -176,11 +198,13 @@ onBeforeUnmount(() => {
 <template>
   <div
     class="composer"
-    :class="{ 'composer--context': replyTo || editing, 'composer--has-send': hasContent }"
+    :class="{
+      'composer--context': replyTo || editing,
+      'composer--has-send': hasContent,
+    }"
   >
     <!-- ==== reply / edit strip ==== -->
     <div v-if="replyTo || editing" class="composer__context">
-      <span class="composer__context-bar" />
       <div class="composer__context-body">
         <span class="composer__context-title">
           <Icon :name="editing ? 'pencil' : 'reply'" :size="14" />
@@ -190,7 +214,11 @@ onBeforeUnmount(() => {
           editing ? editing.content : replyTo.content
         }}</span>
       </div>
-      <button class="icon-btn composer__context-x" aria-label="Cancel" @click="cancelContext">
+      <button
+        class="icon-btn composer__context-x"
+        aria-label="Cancel"
+        @click="cancelContext"
+      >
         <Icon name="close" :size="18" />
       </button>
     </div>
@@ -200,7 +228,11 @@ onBeforeUnmount(() => {
       <div v-for="f in pendingFiles" :key="f.id" class="composer__attachment">
         <img v-if="f.isImage" :src="f.url" alt="" />
         <Icon v-else name="file" :size="22" />
-        <button class="composer__attachment-x" aria-label="Remove" @click="removeFile(f.id)">
+        <button
+          class="composer__attachment-x"
+          aria-label="Remove"
+          @click="removeFile(f.id)"
+        >
           <Icon name="close" :size="14" />
         </button>
       </div>
@@ -217,7 +249,12 @@ onBeforeUnmount(() => {
         >
           <Icon name="plus" :size="24" />
         </button>
-        <button v-if="showEmojiBtn" class="icon-btn" aria-label="Emoji" @click="emit('open-emoji')">
+        <button
+          v-if="showEmojiBtn"
+          class="icon-btn"
+          aria-label="Emoji"
+          @click="emit('open-emoji')"
+        >
           <Icon name="smile" :size="24" />
         </button>
 

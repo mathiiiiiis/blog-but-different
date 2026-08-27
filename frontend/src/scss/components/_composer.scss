@@ -1,8 +1,8 @@
 // ==== component: composer ====
 // centered (not full-width) contained bar; +/emoji actions, auto-grow pill,
 // reply/edit strip on top, primary squircle send that morphs on press
-@use '../typography' as *;
-@use '../utilities' as *;
+@use "../typography" as *;
+@use "../utilities" as *;
 
 .composer {
   position: relative;
@@ -25,13 +25,6 @@
   background: var(--md3-surface-container-low);
   border-radius: var(--md3-shape-l);
   overflow: hidden;
-}
-
-.composer__context-bar {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--md3-primary);
 }
 
 .composer__context-body {
@@ -121,7 +114,9 @@
   gap: 2px;
   flex-shrink: 0;
 
-  .icon-btn.is-active { color: var(--md3-primary); }
+  .icon-btn.is-active {
+    color: var(--md3-primary);
+  }
 }
 
 // ==== "+" context menu ====
@@ -167,7 +162,8 @@
   background: var(--md3-surface-container-low);
   border-radius: var(--md3-shape-xl);
   transition:
-    border-bottom-right-radius var(--md3-dur-medium-2) var(--md3-easing-emphasized),
+    border-bottom-right-radius var(--md3-dur-medium-2)
+      var(--md3-easing-emphasized),
     box-shadow var(--md3-dur-short-3) var(--md3-easing-standard);
 }
 
@@ -195,7 +191,9 @@
   line-height: 1.35;
   color: var(--md3-on-surface);
 
-  &::placeholder { color: var(--md3-on-surface-variant); }
+  &::placeholder {
+    color: var(--md3-on-surface-variant);
+  }
 }
 
 // ==== send ====
@@ -215,7 +213,9 @@
     transform var(--md3-dur-short-4) var(--md3-spring-snappy),
     background-color var(--md3-dur-short-2) var(--md3-easing-standard);
 
-  &:hover { background: var(--md3-primary-30, var(--md3-primary)); }
+  &:hover {
+    background: var(--md3-primary-30, var(--md3-primary));
+  }
 
   &:active {
     border-radius: 24px;
