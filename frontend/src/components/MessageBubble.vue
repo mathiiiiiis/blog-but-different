@@ -87,7 +87,6 @@ function toggleReaction(r) {
 
       <div class="bubble__body" :class="{ 'bubble__body--quote': reply }">
         <div v-if="reply" class="bubble__reply">
-          <Icon name="reply" :size="14" />
           <span class="bubble__reply-author">{{ reply.author_username }}</span>
           <span class="bubble__reply-text">{{
             reply.content || "attachment"
